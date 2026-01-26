@@ -1,0 +1,28 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About"
+  },
+  "footer": {
+    "copyright": "© 2026 My Nuxt 4 Project - Footer"
+  },
+  "hero": {
+    "title": "Beautiful Landing Page",
+    "desc": "Build modern, elegant web experiences with Nuxt UI and Tailwind.",
+    "ctaPrimary": "Get Started",
+    "ctaDoc": "Docs"
+  },
+  "features": {
+    "title1": "Rich Components",
+    "desc1": "Built-in buttons, cards, icons and more.",
+    "title2": "Performance First",
+    "desc2": "Lightweight and fast for dev and UX.",
+    "title3": "Best Practices",
+    "desc3": "Convention over configuration for quick start."
+  },
+  "cta": {
+    "title": "Ready to begin?",
+    "desc": "Spin up your new project in minutes.",
+    "btn": "Start Building"
+  }
+}

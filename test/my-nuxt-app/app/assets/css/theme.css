@@ -1,0 +1,35 @@
+/* 浅色模式 */
+:root {
+  --color-brand-primary: #3b82f6;
+  --color-brand-secondary: #64748b;
+  --text-size-hero: 4rem;
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
+  --color-brand-950: #450a0a;
+}
+/* 深色模式 */
+.dark {
+  --color-brand-primary: #10b981; /* 主绿（适配深色背景） */
+  --color-brand-secondary: #64748b; /* 辅助灰蓝（保持不变，搭配更和谐） */
+  --text-size-hero: 4rem;
+  /* 绿色系色阶（50~950，从浅到深） */
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e; /* 标准主色 */
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+  --color-brand-950: #083321;
+}

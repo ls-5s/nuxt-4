@@ -1,0 +1,32 @@
+{
+  // 禁用 Vetur（Vue 2 扩展，不推荐用于 Vue 3）
+  "vetur.validation.script": false,
+  "vetur.validation.template": false,
+  "vetur.validation.style": false,
+  "vetur.enable": false,
+  
+  // 启用 Volar（Vue 3 官方推荐扩展）
+  "volar.autoCompleteRefs": true,
+  "volar.codeLens.pugTools": false,
+  "volar.codeLens.scriptSetupTools": true,
+  
+  // TypeScript 配置
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.validate.enable": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.preferences.importModuleSpecifier": "relative",
+  
+  // JavaScript 配置
+  "javascript.preferences.includePackageJsonAutoImports": "on",
+  "javascript.suggest.autoImports": true,
+  "javascript.validate.enable": true,
+  
+  // Nuxt 配置
+  "nuxt.isNuxtApp": true,
+  
+  // 忽略特定错误（可选，如果上述配置还不够）
+  "typescript.tsserver.experimental.enableProjectDiagnostics": false,
+  "typescript.disableAutomaticTypeAcquisition": false
+}
+
