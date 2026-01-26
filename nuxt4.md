@@ -1603,3 +1603,236 @@ export default defineEventHandler((event) => {
   event.context.auth = { user: 123 }
 })
 ```
+### 路由参数
+server/api/users/[id].ts 获取动态路由参数
+```ts
+export default defineEventHandler(async (event) => {
+  const { id } = event.context.params
+  return { id }
+})
+
+🔹 进阶用法（带 Zod 参数验证）
+这个方式更安全，能确保参数格式正确，同时获得 TypeScript 类型支持。
+安装 Zod（如果没装）
+bash
+运行
+npm install zod
+创建带验证的路由文件比如创建 server/api/user/[id].ts：
+```ts
+// server/api/user/[id].ts
+import { z } from 'zod'
+
+export default defineEventHandler((event) => {
+  // 定义参数验证规则（id 必须是数字）
+  const { id } = getValidatedRouterParams(event, z.object({
+    id: z.coerce.number()
+  }))
+
+  // 这里可以用 id 去查询数据库等
+  return {
+    message: `获取用户 ID: ${id}`,
+    userId: id
+  }
+})
+```
+测试验证效果
+访问 http://localhost:3000/api/user/123 → 正常返回：
+json
+{ "message": "获取用户 ID: 123", "userId": 123 }
+访问 http://localhost:3000/api/user/abc → 自动返回 400 错误，提示参数验证失败。
+```
+### 匹配 HTTP 方法
+处理文件名可以以 .get、.post、.put、.delete 等后缀来匹配请求的 HTTP 方法。
+
+server/api/test.get.ts
+
+export default defineEventHandler(() => '测试 GET 处理程序')
+server/api/test.post.ts
+
+export default defineEventHandler(() => '测试 POST 处理程序')
+根据上面的示例，请求 /test 时：
+
+GET 方法：返回 测试 GET 处理程序
+POST 方法：返回 测试 POST 处理程序
+任何其他方法：返回 405 错误
+您也可以在目录中使用 index.[method].ts 来以不同方式组织代码，这在创建 API 命名空间时很有用
+
+
+server/
+└── api/
+    └── user/                # 【用户模块专属目录】所有用户相关接口集中管理
+        ├── index.get.ts     # GET /api/user —— 根路径：查询用户列表（带分页/筛选）【核心】
+        ├── index.post.ts    # POST /api/user —— 根路径：创建新用户（主创建接口）
+        ├── [id].get.ts      # GET /api/user/123 —— 动态参数：根据ID查询单个用户详情
+        ├── [id].put.ts      # PUT /api/user/123 —— 动态参数：根据ID编辑单个用户（全量更新）
+        └── [id].delete.ts   # DELETE /api/user/123 —— 动态参数：根据ID删除单个用户
+
+### 通配路由
+Catch-all 路由有助于进行兜底路由处理。
+
+例如，创建名为 ~/server/api/foo/[...].ts 的文件将为所有未匹配到任何路由处理程序的请求注册一个 catch-all 路由，例如 /api/foo/bar/baz。
+
+server/api/foo/[...].ts
+```ts
+export default defineEventHandler((event) => {
+  // 可用 event.context.path 获取路由路径，比如 '/api/foo/bar/baz'
+  // 可用 event.context.params._ 获取路由参数，比如 'bar/baz'
+  return `默认 foo 处理程序`
+})
+您可以通过使用 ~/server/api/foo/[...slug].ts 为 catch-all 路由设置名称，并通过 event.context.params.slug 访问它。
+
+server/api/foo/[...slug].ts
+
+export default defineEventHandler((event) => {
+  // 可用 event.context.params.slug 获取路由参数，比如 'bar/baz'
+  return `默认 foo 处理程序`
+})
+```
+一般是处理404
+```ts
+export default defineEventHander(async(event)=> {
+  setResponseStatus(event, 404)
+  return { 
+    code: 404,
+    message: `接口${event.context.path}未找到`,
+    data: null
+}
+})
+```
+
+### 请求体处理
+```ts
+server/api/body.ts
+export default defineEventHandler(async (event) => {
+  const body = await readBody(event)
+  return { body }
+})
+
+const sum = () => {
+  const  {body } = await  $fetch('/api/body', {method: 'POST', body: {a: 1, b: 2}})
+}
+```
+### 查询参数
+```ts
+示例请求 /api/query?foo=bar&baz=qux
+
+server/api/query.get.ts
+export default defineEventHandler(async (event) => {
+  const query = getQuery(event)
+  return { query }
+})
+```
+### 处理错误
+```ts
+如果没有抛出错误，将返回 200 OK 状态码。
+
+任何未捕获的错误将返回 500 Internal Server Error HTTP 错误。
+
+要返回其他错误代码，请使用 createError 抛出异常：
+
+server/api/validation/[id].ts
+```ts
+export default defineEventHandler((event) => {
+  const id = Number.parseInt(event.context.params.id) as number
+
+  if (!Number.isInteger(id)) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'ID 应该是一个整数',
+    })
+  }
+  return '一切正常'
+})
+```
+### 状态码
+要返回其他状态码，请使用 setResponseStatus 实用函数。
+
+例如，要返回 202 Accepted
+
+server/api/validation/[id].ts
+```ts
+export default defineEventHandler((event) => {
+  setResponseStatus(event, 202)
+})
+```
+### 运行时配置
+
+.env
+```ts
+NUXT_GITHUB_TOKEN='<我的超级令牌>'
+```
+nuxt.config.ts(只有在server端才会生效)
+```ts
+export default defineNuxtConfig({
+  runtimeConfig: {
+     githubToken: process.env.NUXT_GITHUB_TOKEN,
+  },
+})
+```
+server/api/github.ts
+```ts
+// 定义Nuxt服务端API接口的处理函数，async标记为异步函数以支持内部await
+// 该文件路径为server/api/xxx.ts，会被Nuxt自动映射为/api/xxx接口，运行在服务端环境
+export default defineEventHandler(async (event) => {
+  // 获取Nuxt运行时配置，服务端调用必须传入请求上下文event
+  // 可获取nuxt.config.ts中runtimeConfig配置的服务端专属敏感信息（如githubToken）
+  const config = useRuntimeConfig(event)
+
+  // 服务端发起代理请求：调用GitHub开放API获取Nuxt官方仓库的详细信息
+  // $fetch是Nuxt内置跨平台请求工具，服务端运行无浏览器跨域限制
+  const repo = await $fetch('https://api.github.com/repos/nuxt/nuxt', {
+    // 请求头配置：添加GitHub API鉴权信息
+    headers: {
+      // Authorization是GitHub API的令牌鉴权格式，拼接从运行时配置获取的敏感Token
+      // 该Token仅服务端可访问，前端无法获取，避免敏感信息泄露
+      Authorization: `token ${config.githubToken}`,
+    },
+  })
+
+  // 将GitHub API返回的仓库信息，以JSON格式返回给前端（Nuxt自动序列化+设置200状态码）
+  return repo
+})
+```
+### 请求 Cookie
+```ts
+
+server/api/cookies.ts
+
+export default defineEventHandler((event) => {
+  const cookies = parseCookies(event)
+
+  return { cookies }
+})
+```
+### 转发上下文和请求头
+默认情况下，在服务器路由中进行 fetch 请求时，传入请求的头和请求上下文都不会被转发。您可以使用 event.$fetch 在服务器路由中进行 fetch 请求时转发请求上下文和头。
+
+server/api/forward.ts
+```ts
+// Nuxt服务端API接口：实现服务端内部接口转发/代理
+// 该文件路径为server/api/xxx.ts，会被Nitro引擎自动映射为/api/xxx接口（前端可通过此路径调用）
+export default defineEventHandler(async (event) => {
+  // 服务端内部调用当前Nuxt项目的/api/forwarded接口（对应server/api/forwarded.ts）
+  // event.$fetch是Nitro注入的服务端专属请求工具，发起内部逻辑调用（无网络HTTP开销）
+  // 自动继承当前请求的Cookie、请求头、鉴权上下文等，无需手动传递
+  return await event.$fetch('/api/forwarded')
+})
+```
+### 响应后等待 Promise
+在处理服务器请求时，您可能需要执行一些异步任务且不应阻塞对客户端的响应（例如缓存和日志）。您可以使用 event.waitUntil 在后台等待一个 promise，而不延迟响应。
+
+event.waitUntil 方法接受一个 promise，该 promise 会在处理程序终止之前被等待，确保任务在响应发送后仍能完成。它会与运行时提供者集成，以利用其在响应发送后处理异步操作的原生能力。
+
+server/api/background-task.ts
+```ts
+const timeConsumingBackgroundTask = async () => {
+  await new Promise(resolve => setTimeout(resolve, 1000))
+}
+
+export default eventHandler((event) => {
+  // 安排一个后台任务，不阻塞响应
+  event.waitUntil(timeConsumingBackgroundTask())
+  // 立即向客户端发送响应
+  return '完成'
+})
+```
