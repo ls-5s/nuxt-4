@@ -40,34 +40,40 @@ export const useUserStore = defineStore("user", () => {
   // TS 自动推导返回值类型为 Promise<boolean>
   const login = async (account: string, password: string) => {
     try {
-      // 使用 Nuxt 4 内置的 $fetch 调用真实的 API 接口
-      const res = await $fetch<{
-        code: number;
-        message: string;
-        data: {
-          token: string;
-          userInfo: {
-            userId: string;
-            userName: string;
-            avatar: string;
-            role: string;
-          };
+      // Nuxt4 内置 ofetch（替代 axios，SSR 友好），可直接使用
+      // const res = await $fetch('/api/user/login', {
+      //   method: 'POST',
+      //   body: { account, password }
+      // })
+      // 模拟接口请求返回结果
+      const res = await new Promise<{
+        token: string;
+        userInfo: {
+          userId: string;
+          userName: string;
+          avatar: string;
+          role: string;
         };
-      }>("/api/user/login", {
-        method: "POST",
-        body: { account, password },
+      }>((resolve) => {
+        setTimeout(() => {
+          resolve({
+            token: "nuxt4_pinia_ts_token_123456",
+            userInfo: {
+              userId: "1001",
+              userName: "Nuxt4用户",
+              avatar: "/images/avatar.png",
+              role: "normal",
+            },
+          });
+        }, 500);
       });
-
-      if (res.code === 200 && res.data) {
-        // 直接修改 State，响应式自动生效
-        token.value = res.data.token;
-        setUserInfo(res.data.userInfo);
-        return true;
-      }
-      return false;
+      // 直接修改 State，响应式自动生效
+      token.value = res.token;
+      setUserInfo(res.userInfo);
+      return true; // 登录成功返回
     } catch (error) {
       console.error("登录失败：", error);
-      return false;
+      return false; // 登录失败返回
     }
   };
 

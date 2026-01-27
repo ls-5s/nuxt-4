@@ -53,7 +53,7 @@ export default defineNuxtConfig({
       alwaysRedirect: false,
       fallbackLocale: "zh",
     },
-    langDir: "./app/locales",
+    langDir: "locales",
     vueI18n: "./i18n.config.ts",
   },
 });
