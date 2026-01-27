@@ -4,6 +4,7 @@
     <section>
       <h2 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
         欢迎使用 Nuxt 4 主题演示
+        <NuxtLink to="/">返回首页</NuxtLink>
       </h2>
       <p class="text-lg text-gray-600 dark:text-gray-400">
         这是一个使用 Nuxt 4、TypeScript 和 Tailwind CSS 构建的规范化前端项目示例。包含主题切换、颜色方案切换和完整的按钮组件系统。

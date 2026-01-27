@@ -7,10 +7,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // 模块配置
-  modules: [
-    "@nuxt/ui",
-    "@pinia/nuxt",
-  ],
+  modules: ["@nuxt/ui", "@pinia/nuxt"],
 
   // 全局样式
   css: ["~/assets/css/main.css"],
@@ -50,10 +47,6 @@ export default defineNuxtConfig({
       appName: "Nuxt 4 App",
       appVersion: "1.0.0",
     },
-<<<<<<< HEAD
-    langDir: "locales",
-    vueI18n: "./i18n.config.ts",
-=======
   },
 
   // 应用配置
@@ -62,20 +55,9 @@ export default defineNuxtConfig({
       charset: "utf-8",
       viewport: "width=device-width, initial-scale=1",
       title: "Nuxt 4 App",
-      meta: [
-        { name: "description", content: "Modern web application built with Nuxt 4" },
-      ],
+      meta: [{ name: "description", content: "Modern web application built with Nuxt 4" }],
     },
-  },
-
-  // 构建配置
-  build: {
-    transpile: [],
-  },
-
-  // 实验性功能
-  experimental: {
-    // 根据需要启用实验性功能
->>>>>>> ea113425e9fd30896636ff25f524813f9558c631
+    langDir: "./app/locales",
+    vueI18n: "./i18n.config.ts",
   },
 });
