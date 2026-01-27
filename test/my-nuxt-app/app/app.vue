@@ -12,51 +12,14 @@ onMounted(() => {
 })
 const toggleTheme = () => applyTheme(!isDark.value)
 
-// 手动定义 locale 对象，替代 @nuxt/ui/locale 导入
-const uiLocales = {
-  zh: {
-    code: "zh",
-    name: "中文",
-    iso: "zh-CN",
-  },
-  en: {
-    code: "en",
-    name: "English",
-    iso: "en-US",
-  },
-}
-
-const { locale, setLocale, locales } = useI18n()
 const userStore = useUserStore()
 const { isLogin, userShowName, userInfo } = storeToRefs(userStore)
-
-const uiLocale = computed(() => {
-  return uiLocales[locale.value as keyof typeof uiLocales] || uiLocales.en
-})
-
-// 语言选项列表
-const localeOptions = computed(() => {
-  return Object.values(uiLocales).map((loc) => ({
-    label: loc.name,
-    value: loc.code,
-  }))
-})
-
-// 当前选中的语言
-const currentLocale = computed({
-  get: () => locale.value,
-  set: (val: string) => {
-    if (val === "zh" || val === "en") {
-      setLocale(val)
-    }
-  },
-})
 </script>
 
 <template>
   <div>
     <NuxtLayout>
-      <!-- 语言和主题切换器 - 固定在右上角 -->
+      <!-- 主题切换器 - 固定在右上角 -->
       <div class="fixed top-20 right-4 z-50 flex flex-col items-end gap-2">
         <div class="flex items-center gap-2 bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 p-2">
           <!-- 用户信息展示 -->
@@ -85,13 +48,6 @@ const currentLocale = computed({
             />
           </template>
 
-          <USelect
-            v-model="currentLocale"
-            :options="localeOptions"
-            size="sm"
-            class="w-28"
-            placeholder="语言"
-          />
           <UButton
             :icon="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
             :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"
@@ -108,7 +64,3 @@ const currentLocale = computed({
     <UNotifications />
   </div>
 </template>
-
-<style>
-@import "~/assets/main.css";
-</style>

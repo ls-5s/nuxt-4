@@ -1,0 +1,18 @@
+@import "./theme.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 全局背景色设置 */
+@layer base {
+  html {
+    @apply bg-white dark:bg-gray-900;
+    transition: background-color 0.2s ease-in-out;
+  }
+
+  body {
+    @apply bg-white dark:bg-gray-900;
+    transition: background-color 0.2s ease-in-out;
+  }
+}

@@ -1,5 +1,26 @@
-@import url("~/assets/css/theme.css");
+/**
+ * 主样式文件
+ * 导入 Tailwind CSS 和自定义样式
+ */
+
+@import "./theme.css";
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/**
+ * 自定义组件样式
+ * 使用 @layer components 确保样式优先级正确
+ */
+@layer components {
+  /* 可以在这里添加全局组件样式 */
+}
+
+/**
+ * 自定义工具类
+ * 使用 @layer utilities 添加自定义工具类
+ */
+@layer utilities {
+  /* 可以在这里添加自定义工具类 */
+}

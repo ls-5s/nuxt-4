@@ -7,10 +7,7 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // 模块配置
-  modules: [
-    "@nuxt/ui",
-    "@pinia/nuxt",
-  ],
+  modules: ["@nuxt/ui", "@pinia/nuxt"],
 
   // 全局样式
   css: ["~/assets/css/main.css"],
@@ -20,7 +17,7 @@ export default defineNuxtConfig({
     {
       path: "~/components",
       pathPrefix: false,
-      ignore: ["**/demo/**", "**/*.test.*", "**/*.spec.*"],
+      ignore: ["**/*.test.*", "**/*.spec.*"],
     },
   ],
 
@@ -28,8 +25,6 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
     shim: false,
-    // 禁用开发时的类型检查（可通过 pnpm typecheck 单独运行）
-    // 避免 vite-plugin-checker 的 ESLint 版本冲突
     typeCheck: false,
     tsConfig: {
       compilerOptions: {
@@ -41,37 +36,18 @@ export default defineNuxtConfig({
   },
 
 
-  // 运行时配置
-  runtimeConfig: {
-    // 私有配置（仅在服务端可用）
-    apiSecret: "",
-    // 公共配置（客户端和服务端都可用）
-    public: {
-      apiBase: "",
-      appName: "Nuxt 4 App",
-      appVersion: "1.0.0",
-    },
-  },
-
   // 应用配置
   app: {
     head: {
       charset: "utf-8",
       viewport: "width=device-width, initial-scale=1",
-      title: "Nuxt 4 App",
+      title: "Nuxt 4 Theme Demo",
       meta: [
-        { name: "description", content: "Modern web application built with Nuxt 4" },
+        {
+          name: "description",
+          content: "Modern web application with theme switching built with Nuxt 4",
+        },
       ],
     },
-  },
-
-  // 构建配置
-  build: {
-    transpile: [],
-  },
-
-  // 实验性功能
-  experimental: {
-    // 根据需要启用实验性功能
   },
 });
