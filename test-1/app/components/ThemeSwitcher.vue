@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { useTheme } from "~/composables/useTheme";
+import { useI18n } from '#imports';
 
+const { t } = useI18n();
 const { mode, isDark, toggleTheme, setMode } = useTheme();
 
 const modes = [
-  { value: "light", icon: "☀️", label: "浅色" },
-  { value: "dark", icon: "🌙", label: "深色" },
+  { value: "light", icon: "☀️", label: t('demo.theme.light') },
+  { value: "dark", icon: "🌙", label: t('demo.theme.dark') },
 ] as const;
 </script>
 

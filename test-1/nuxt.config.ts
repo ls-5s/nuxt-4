@@ -7,7 +7,29 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
 
   // 模块配置
-  modules: ["@nuxt/ui", "@pinia/nuxt"],
+  modules: ["@nuxt/ui", "@pinia/nuxt", "@nuxtjs/i18n"],
+
+  // i18n 配置
+  i18n: {
+    strategy: "prefix_except_default",
+    locales: [
+      {
+        code: "zh",
+        iso: "zh-CN",
+        name: "中文",
+        file: "zh.ts",
+      },
+      {
+        code: "en",
+        iso: "en-US",
+        name: "English",
+        file: "en.ts",
+      },
+    ],
+    langDir: "lang",
+    defaultLocale: "zh",
+    vueI18n: "./i18n.config.ts",
+  },
 
   // 全局样式
   css: ["~/assets/css/main.css"],
@@ -34,7 +56,6 @@ export default defineNuxtConfig({
       },
     },
   },
-
 
   // 应用配置
   app: {

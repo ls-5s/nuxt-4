@@ -1,0 +1,101 @@
+// lang/zh.ts
+export default {
+  hero: {
+    title: '探索宇宙',
+    desc: 'Nuxt UI Pro 是一个强大的组件库，助你快速构建精美的网站。',
+  },
+  index: {
+    goToDemo: '跳转到 Demo',
+    namePlaceholder: '请输入用户名',
+    passwordPlaceholder: '请输入密码',
+    login: '登录',
+    getUserInfo: '获取用户信息',
+    loginSuccess: '登录成功',
+    loginFailed: '登录失败',
+  },
+  demo: {
+    title: '欢迎使用 Nuxt 4 主题演示',
+    backHome: '返回首页',
+    description: '这是一个使用 Nuxt 4、TypeScript 和 Tailwind CSS 构建的规范化前端项目示例。包含主题切换、颜色方案切换和完整的按钮组件系统。',
+    loading: '加载中...',
+    buttons: {
+      title: '按钮组件演示',
+      sizes: {
+        title: '尺寸',
+        xs: '超小 (XS)',
+        sm: '小 (SM)',
+        md: '中 (MD)',
+        lg: '大 (LG)',
+        xl: '超大 (XL)',
+      },
+      variants: {
+        title: '变体',
+        solid: '实心 (Solid)',
+        outline: '轮廓 (Outline)',
+        ghost: '幽灵 (Ghost)',
+        soft: '柔和 (Soft)',
+        link: '链接 (Link)',
+      },
+      intents: {
+        title: '意图/颜色',
+        primary: '主要 (Primary)',
+        secondary: '次要 (Secondary)',
+        success: '成功 (Success)',
+        warning: '警告 (Warning)',
+        danger: '危险 (Danger)',
+        neutral: '中性 (Neutral)',
+      },
+      states: {
+        title: '状态',
+        normal: '正常',
+        disabled: '禁用',
+        loading: '加载中',
+        fullWidth: '全宽按钮',
+      },
+      combinations: {
+        title: '组合示例',
+        lgPrimary: '大号主要按钮',
+        smSuccess: '小号成功按钮',
+        loadingWarning: '加载中的警告按钮',
+        disabledDanger: '禁用的危险按钮',
+      },
+    },
+    theme: {
+      title: '主题切换演示',
+      currentMode: '当前主题模式',
+      dark: '深色',
+      light: '浅色',
+      colorScheme: '当前颜色方案',
+      isDark: '是否为深色模式',
+      yes: '是',
+      no: '否',
+      switchToLight: '切换到浅色',
+      switchToDark: '切换到深色',
+    },
+    colorSchemes: {
+      title: '颜色方案演示',
+      current: '当前方案',
+      switchTo: '切换到此方案',
+      blue: {
+        label: '蓝色方案',
+        description: '经典蓝色，适合大多数应用场景',
+      },
+      green: {
+        label: '绿色方案',
+        description: '清新绿色，适合自然、环保类应用',
+      },
+      purple: {
+        label: '紫色方案',
+        description: '优雅紫色，适合创意、艺术类应用',
+      },
+      red: {
+        label: '红色方案',
+        description: '热情红色，适合活力、运动类应用',
+      },
+      orange: {
+        label: '橙色方案',
+        description: '温暖橙色，适合温暖、友好类应用',
+      },
+    },
+  },
+};
