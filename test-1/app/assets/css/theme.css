@@ -1,0 +1,184 @@
+/**
+ * 主题样式文件
+ * 定义 CSS 变量，支持浅色和深色模式，以及多种颜色方案
+ */
+
+/* ============================================
+   浅色模式 - 默认值（蓝色方案）
+   ============================================ */
+:root {
+  /* 默认使用蓝色方案 */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
+}
+
+/* 蓝色方案（显式定义，确保优先级） */
+html[data-color-scheme="blue"],
+[data-color-scheme="blue"] {
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+  --color-brand-950: #172554;
+}
+
+/* 绿色方案 */
+html[data-color-scheme="green"],
+[data-color-scheme="green"] {
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+  --color-brand-950: #052e16;
+}
+
+/* 紫色方案 */
+html[data-color-scheme="purple"],
+[data-color-scheme="purple"] {
+  --color-brand-50: #faf5ff;
+  --color-brand-100: #f3e8ff;
+  --color-brand-200: #e9d5ff;
+  --color-brand-300: #d8b4fe;
+  --color-brand-400: #c084fc;
+  --color-brand-500: #a855f7;
+  --color-brand-600: #9333ea;
+  --color-brand-700: #7e22ce;
+  --color-brand-800: #6b21a8;
+  --color-brand-900: #581c87;
+  --color-brand-950: #3b0764;
+}
+
+/* 红色方案 */
+html[data-color-scheme="red"],
+[data-color-scheme="red"] {
+  --color-brand-50: #fef2f2;
+  --color-brand-100: #fee2e2;
+  --color-brand-200: #fecaca;
+  --color-brand-300: #fca5a5;
+  --color-brand-400: #f87171;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #dc2626;
+  --color-brand-700: #b91c1c;
+  --color-brand-800: #991b1b;
+  --color-brand-900: #7f1d1d;
+  --color-brand-950: #450a0a;
+}
+
+/* 橙色方案 */
+html[data-color-scheme="orange"],
+[data-color-scheme="orange"] {
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb923c;
+  --color-brand-500: #f97316;
+  --color-brand-600: #ea580c;
+  --color-brand-700: #c2410c;
+  --color-brand-800: #9a3412;
+  --color-brand-900: #7c2d12;
+  --color-brand-950: #431407;
+}
+
+/* ============================================
+   深色模式
+   ============================================ */
+.dark {
+  /* 深色模式下的颜色会稍微调整，保持可读性 */
+}
+
+html.dark[data-color-scheme="blue"],
+.dark[data-color-scheme="blue"] {
+  --color-brand-50: #1e3a8a;
+  --color-brand-100: #1e40af;
+  --color-brand-200: #1d4ed8;
+  --color-brand-300: #2563eb;
+  --color-brand-400: #3b82f6;
+  --color-brand-500: #60a5fa;
+  --color-brand-600: #93c5fd;
+  --color-brand-700: #bfdbfe;
+  --color-brand-800: #dbeafe;
+  --color-brand-900: #eff6ff;
+  --color-brand-950: #f0f9ff;
+}
+
+html.dark[data-color-scheme="green"],
+.dark[data-color-scheme="green"] {
+  --color-brand-50: #052e16;
+  --color-brand-100: #14532d;
+  --color-brand-200: #166534;
+  --color-brand-300: #15803d;
+  --color-brand-400: #16a34a;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #4ade80;
+  --color-brand-700: #86efac;
+  --color-brand-800: #bbf7d0;
+  --color-brand-900: #dcfce7;
+  --color-brand-950: #f0fdf4;
+}
+
+html.dark[data-color-scheme="purple"],
+.dark[data-color-scheme="purple"] {
+  --color-brand-50: #3b0764;
+  --color-brand-100: #581c87;
+  --color-brand-200: #6b21a8;
+  --color-brand-300: #7e22ce;
+  --color-brand-400: #9333ea;
+  --color-brand-500: #a855f7;
+  --color-brand-600: #c084fc;
+  --color-brand-700: #d8b4fe;
+  --color-brand-800: #e9d5ff;
+  --color-brand-900: #f3e8ff;
+  --color-brand-950: #faf5ff;
+}
+
+html.dark[data-color-scheme="red"],
+.dark[data-color-scheme="red"] {
+  --color-brand-50: #450a0a;
+  --color-brand-100: #7f1d1d;
+  --color-brand-200: #991b1b;
+  --color-brand-300: #b91c1c;
+  --color-brand-400: #dc2626;
+  --color-brand-500: #ef4444;
+  --color-brand-600: #f87171;
+  --color-brand-700: #fca5a5;
+  --color-brand-800: #fecaca;
+  --color-brand-900: #fee2e2;
+  --color-brand-950: #fef2f2;
+}
+
+html.dark[data-color-scheme="orange"],
+.dark[data-color-scheme="orange"] {
+  --color-brand-50: #431407;
+  --color-brand-100: #7c2d12;
+  --color-brand-200: #9a3412;
+  --color-brand-300: #c2410c;
+  --color-brand-400: #ea580c;
+  --color-brand-500: #f97316;
+  --color-brand-600: #fb923c;
+  --color-brand-700: #fdba74;
+  --color-brand-800: #fed7aa;
+  --color-brand-900: #ffedd5;
+  --color-brand-950: #fff7ed;
+}

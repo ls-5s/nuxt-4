@@ -18,20 +18,20 @@ useHead({
           <!-- 徽章 -->
           <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 text-sm font-medium mb-6">
             <span class="i-heroicons-sparkles text-base"></span>
-            <span>{{ $t('hero.badge') }}</span>
+            <span>全新发布</span>
           </div>
 
           <!-- 主标题 -->
           <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 dark:text-white mb-6">
-            <span class="block">{{ $t('hero.title') }}</span>
+            <span class="block">精美着陆页</span>
             <span class="block bg-gradient-to-r from-brand-600 to-brand-700 bg-clip-text text-transparent">
-              {{ $t('hero.titleHighlight') }}
+              现代化设计
             </span>
           </h1>
 
           <!-- 描述 -->
           <p class="mx-auto max-w-2xl text-xl text-gray-600 dark:text-gray-300 mb-10">
-            {{ $t('hero.desc') }}
+            使用 Nuxt UI 与 Tailwind，快速构建现代、优雅的网页体验。
           </p>
 
           <!-- CTA 按钮 -->
@@ -39,14 +39,14 @@ useHead({
             <UButton
               icon="i-heroicons-rocket-launch"
               size="xl"
-              :label="$t('hero.ctaPrimary')"
+              label="立即体验"
               class="bg-brand-600 hover:bg-brand-700 text-white border-0 shadow-lg shadow-brand-500/50 hover:shadow-xl hover:shadow-brand-500/50 transition-all"
             />
             <UButton
               icon="i-heroicons-book-open"
               variant="outline"
               size="xl"
-              :label="$t('hero.ctaDoc')"
+              label="查看文档"
               class="border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
             />
           </div>
@@ -55,15 +55,15 @@ useHead({
           <div class="mt-16 grid grid-cols-3 gap-8 max-w-2xl mx-auto">
             <div class="text-center">
               <div class="text-3xl font-bold text-brand-600 dark:text-brand-400">100+</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $t('hero.stats.components') }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">组件</div>
             </div>
             <div class="text-center">
               <div class="text-3xl font-bold text-brand-600 dark:text-brand-400">50K+</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $t('hero.stats.downloads') }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">下载量</div>
             </div>
             <div class="text-center">
               <div class="text-3xl font-bold text-brand-600 dark:text-brand-400">99%</div>
-              <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ $t('hero.stats.satisfaction') }}</div>
+              <div class="text-sm text-gray-600 dark:text-gray-400 mt-1">满意度</div>
             </div>
           </div>
         </div>
@@ -75,10 +75,10 @@ useHead({
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="text-center mb-16">
           <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-4">
-            {{ $t('features.title') }}
+            为什么选择我们
           </h2>
           <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            {{ $t('features.subtitle') }}
+            提供完整的解决方案，让开发更简单、更高效
           </p>
         </div>
 
@@ -89,10 +89,10 @@ useHead({
               <span class="i-heroicons-sparkles-20-solid text-white text-2xl"></span>
             </div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
-              {{ $t('features.title1') }}
+              组件丰富
             </h3>
             <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-              {{ $t('features.desc1') }}
+              内置 100+ 精美组件，包括按钮、卡片、图标等，随拿随用，开箱即用。
             </p>
           </UCard>
 
@@ -102,10 +102,10 @@ useHead({
               <span class="i-heroicons-bolt-20-solid text-white text-2xl"></span>
             </div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
-              {{ $t('features.title2') }}
+              性能优先
             </h3>
             <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-              {{ $t('features.desc2') }}
+              轻量、极速，采用最新的技术栈，开发与体验两不误，性能卓越。
             </p>
           </UCard>
 
@@ -115,10 +115,10 @@ useHead({
               <span class="i-heroicons-shield-check-20-solid text-white text-2xl"></span>
             </div>
             <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-3">
-              {{ $t('features.title3') }}
+              最佳实践
             </h3>
             <p class="text-gray-600 dark:text-gray-400 leading-relaxed">
-              {{ $t('features.desc3') }}
+              约定优于配置，遵循行业最佳实践，快速上手不走弯路，代码质量有保障。
             </p>
           </UCard>
         </div>
@@ -132,17 +132,17 @@ useHead({
           <div class="flex flex-col md:flex-row items-center justify-between gap-8">
             <div class="text-center md:text-left">
               <h3 class="text-3xl font-bold text-white mb-4">
-                {{ $t('cta.title') }}
+                准备好开始了吗？
               </h3>
               <p class="text-lg text-white/90 max-w-xl">
-                {{ $t('cta.desc') }}
+                几分钟内搭建你的新项目，立即开始你的开发之旅。
               </p>
             </div>
             <div>
               <UButton
                 icon="i-heroicons-arrow-right-20-solid"
                 size="xl"
-                :label="$t('cta.btn')"
+                label="开始构建"
                 class="bg-white text-brand-600 hover:bg-gray-100 border-0 shadow-lg hover:shadow-xl transition-all"
               />
             </div>
@@ -155,14 +155,14 @@ useHead({
 
 <style scoped>
 .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
   background-size: 20px 20px;
 }
 
 .dark .bg-grid-pattern {
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
 }

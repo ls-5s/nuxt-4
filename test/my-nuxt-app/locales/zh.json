@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "home": "首页",
+    "about": "关于我们",
+    "demo": "演示"
+  },
+  "footer": {
+    "copyright": "© 2026 我的 Nuxt 4 项目 - 保留所有权利",
+    "description": "使用 Nuxt UI 与 Tailwind CSS 构建的现代化 Web 应用框架。",
+    "quickLinks": "快速链接",
+    "contact": "联系我们",
+    "contactDesc": "如有任何问题或建议，欢迎随时联系我们。"
+  },
+  "hero": {
+    "badge": "全新发布",
+    "title": "精美着陆页",
+    "titleHighlight": "现代化设计",
+    "desc": "使用 Nuxt UI 与 Tailwind，快速构建现代、优雅的网页体验。",
+    "ctaPrimary": "立即体验",
+    "ctaDoc": "查看文档",
+    "stats": {
+      "components": "组件",
+      "downloads": "下载量",
+      "satisfaction": "满意度"
+    }
+  },
+  "features": {
+    "title": "为什么选择我们",
+    "subtitle": "提供完整的解决方案，让开发更简单、更高效",
+    "title1": "组件丰富",
+    "desc1": "内置 100+ 精美组件，包括按钮、卡片、图标等，随拿随用，开箱即用。",
+    "title2": "性能优先",
+    "desc2": "轻量、极速，采用最新的技术栈，开发与体验两不误，性能卓越。",
+    "title3": "最佳实践",
+    "desc3": "约定优于配置，遵循行业最佳实践，快速上手不走弯路，代码质量有保障。"
+  },
+  "cta": {
+    "title": "准备好开始了吗？",
+    "desc": "几分钟内搭建你的新项目，立即开始你的开发之旅。",
+    "btn": "开始构建"
+  },
+  "about": {
+    "title": "关于我们",
+    "mission": {
+      "title": "我们的使命",
+      "desc": "通过创新的技术和最佳实践，帮助开发者快速构建高质量的 Web 应用，提升开发效率和用户体验。"
+    },
+    "vision": {
+      "title": "我们的愿景",
+      "desc": "成为前端开发领域的引领者，推动 Web 技术的发展，为开发者社区贡献更多有价值的工具和解决方案。"
+    },
+    "values": {
+      "title": "我们的价值观",
+      "innovation": {
+        "title": "创新驱动",
+        "desc": "持续探索新技术，追求最佳实践"
+      },
+      "user": {
+        "title": "用户至上",
+        "desc": "以用户体验为核心，打造易用的产品"
+      },
+      "quality": {
+        "title": "代码质量",
+        "desc": "注重代码规范，确保可维护性和可扩展性"
+      },
+      "teamwork": {
+        "title": "团队协作",
+        "desc": "开放沟通，共同成长，创造价值"
+      }
+    },
+    "techStack": {
+      "title": "技术栈"
+    },
+    "team": {
+      "title": "团队成员"
+    },
+    "timeline": {
+      "title": "发展历程"
+    },
+    "contact": {
+      "title": "想和我们一起工作？",
+      "desc": "我们正在寻找有才华的开发者加入我们的团队",
+      "backHome": "返回首页",
+      "contactUs": "联系我们"
+    }
+  },
+  "common": {
+    "login": "登录",
+    "logout": "退出",
+    "loading": "加载中...",
+    "submit": "提交",
+    "cancel": "取消",
+    "confirm": "确认",
+    "save": "保存",
+    "edit": "编辑",
+    "delete": "删除",
+    "search": "搜索",
+    "filter": "筛选",
+    "reset": "重置"
+  }
+}

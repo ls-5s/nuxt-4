@@ -22,21 +22,21 @@
               class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               active-class="bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400"
             >
-              {{ $t('nav.home') }}
+              首页
             </NuxtLink>
             <NuxtLink
               to="/about"
               class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               active-class="bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400"
             >
-              {{ $t('nav.about') }}
+              关于我们
             </NuxtLink>
             <NuxtLink
               to="/demo"
               class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               active-class="bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400"
             >
-              {{ $t('nav.demo') }}
+              演示
             </NuxtLink>
           </div>
 
@@ -58,21 +58,21 @@
             class="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             @click="mobileMenuOpen = false"
           >
-            {{ $t('nav.home') }}
+            首页
           </NuxtLink>
           <NuxtLink
             to="/about"
             class="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             @click="mobileMenuOpen = false"
           >
-            {{ $t('nav.about') }}
+            关于我们
           </NuxtLink>
           <NuxtLink
             to="/demo"
             class="block px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             @click="mobileMenuOpen = false"
           >
-            {{ $t('nav.demo') }}
+            演示
           </NuxtLink>
         </div>
       </nav>
@@ -96,27 +96,27 @@
               <span class="text-lg font-bold text-gray-900 dark:text-white">Nuxt 4</span>
             </div>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{ $t('footer.description') }}
+              使用 Nuxt UI 与 Tailwind CSS 构建的现代化 Web 应用框架。
             </p>
           </div>
 
           <!-- 快速链接 -->
           <div>
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ $t('footer.quickLinks') }}</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">快速链接</h3>
             <ul class="space-y-2">
               <li>
                 <NuxtLink to="/" class="text-sm text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
-                  {{ $t('nav.home') }}
+                  首页
                 </NuxtLink>
               </li>
               <li>
                 <NuxtLink to="/about" class="text-sm text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
-                  {{ $t('nav.about') }}
+                  关于我们
                 </NuxtLink>
               </li>
               <li>
                 <NuxtLink to="/demo" class="text-sm text-gray-600 dark:text-gray-400 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">
-                  {{ $t('nav.demo') }}
+                  演示
                 </NuxtLink>
               </li>
             </ul>
@@ -124,9 +124,9 @@
 
           <!-- 联系信息 -->
           <div>
-            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">{{ $t('footer.contact') }}</h3>
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white mb-4">联系我们</h3>
             <p class="text-sm text-gray-600 dark:text-gray-400">
-              {{ $t('footer.contactDesc') }}
+              如有任何问题或建议，欢迎随时联系我们。
             </p>
           </div>
         </div>
@@ -134,7 +134,7 @@
         <!-- 版权信息 -->
         <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-800">
           <p class="text-center text-sm text-gray-600 dark:text-gray-400">
-            {{ $t('footer.copyright') }}
+            © 2026 我的 Nuxt 4 项目 - 保留所有权利
           </p>
         </div>
       </div>
