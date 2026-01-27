@@ -1,0 +1,101 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "demo": "Demo"
+  },
+  "footer": {
+    "copyright": "© 2026 My Nuxt 4 Project - All Rights Reserved",
+    "description": "Modern web application framework built with Nuxt UI and Tailwind CSS.",
+    "quickLinks": "Quick Links",
+    "contact": "Contact Us",
+    "contactDesc": "If you have any questions or suggestions, please feel free to contact us."
+  },
+  "hero": {
+    "badge": "New Release",
+    "title": "Beautiful Landing Page",
+    "titleHighlight": "Modern Design",
+    "desc": "Build modern, elegant web experiences with Nuxt UI and Tailwind.",
+    "ctaPrimary": "Get Started",
+    "ctaDoc": "View Docs",
+    "stats": {
+      "components": "Components",
+      "downloads": "Downloads",
+      "satisfaction": "Satisfaction"
+    }
+  },
+  "features": {
+    "title": "Why Choose Us",
+    "subtitle": "Complete solutions to make development simpler and more efficient",
+    "title1": "Rich Components",
+    "desc1": "100+ beautiful built-in components including buttons, cards, icons, ready to use out of the box.",
+    "title2": "Performance First",
+    "desc2": "Lightweight and fast, using the latest tech stack, excellent performance for both development and user experience.",
+    "title3": "Best Practices",
+    "desc3": "Convention over configuration, following industry best practices, quick start with guaranteed code quality."
+  },
+  "cta": {
+    "title": "Ready to begin?",
+    "desc": "Spin up your new project in minutes and start your development journey.",
+    "btn": "Start Building"
+  },
+  "about": {
+    "title": "About Us",
+    "mission": {
+      "title": "Our Mission",
+      "desc": "Through innovative technology and best practices, help developers quickly build high-quality web applications, improving development efficiency and user experience."
+    },
+    "vision": {
+      "title": "Our Vision",
+      "desc": "Become a leader in frontend development, promote the development of web technology, and contribute more valuable tools and solutions to the developer community."
+    },
+    "values": {
+      "title": "Our Values",
+      "innovation": {
+        "title": "Innovation Driven",
+        "desc": "Continuously explore new technologies and pursue best practices"
+      },
+      "user": {
+        "title": "User First",
+        "desc": "User experience as the core, creating easy-to-use products"
+      },
+      "quality": {
+        "title": "Code Quality",
+        "desc": "Focus on code standards to ensure maintainability and scalability"
+      },
+      "teamwork": {
+        "title": "Team Collaboration",
+        "desc": "Open communication, grow together, create value"
+      }
+    },
+    "techStack": {
+      "title": "Tech Stack"
+    },
+    "team": {
+      "title": "Team Members"
+    },
+    "timeline": {
+      "title": "Timeline"
+    },
+    "contact": {
+      "title": "Want to work with us?",
+      "desc": "We are looking for talented developers to join our team",
+      "backHome": "Back to Home",
+      "contactUs": "Contact Us"
+    }
+  },
+  "common": {
+    "login": "Login",
+    "logout": "Logout",
+    "loading": "Loading...",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "search": "Search",
+    "filter": "Filter",
+    "reset": "Reset"
+  }
+}

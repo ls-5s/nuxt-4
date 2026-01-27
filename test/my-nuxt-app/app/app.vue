@@ -1,19 +1,20 @@
 <script setup lang="ts">
-const isDark = ref(false)
+// 主题切换
+const isDark = ref(false);
 const applyTheme = (dark: boolean) => {
-  const el = document.documentElement
-  el.classList.toggle("dark", dark)
-  localStorage.setItem("theme", dark ? "dark" : "light")
-  isDark.value = dark
-}
+  const el = document.documentElement;
+  el.classList.toggle("dark", dark);
+  localStorage.setItem("theme", dark ? "dark" : "light");
+  isDark.value = dark;
+};
 onMounted(() => {
-  const saved = localStorage.getItem("theme")
-  applyTheme(saved === "dark")
-})
-const toggleTheme = () => applyTheme(!isDark.value)
+  const saved = localStorage.getItem("theme");
+  applyTheme(saved === "dark");
+});
+const toggleTheme = () => applyTheme(!isDark.value);
 
-const userStore = useUserStore()
-const { isLogin, userShowName, userInfo } = storeToRefs(userStore)
+const userStore = useUserStore();
+const { isLogin, userShowName, userInfo } = storeToRefs(userStore);
 </script>
 
 <template>
@@ -48,6 +49,7 @@ const { isLogin, userShowName, userInfo } = storeToRefs(userStore)
             />
           </template>
 
+          <!-- 主题切换器 -->
           <UButton
             :icon="isDark ? 'i-heroicons-sun' : 'i-heroicons-moon'"
             :aria-label="isDark ? '切换到浅色模式' : '切换到深色模式'"

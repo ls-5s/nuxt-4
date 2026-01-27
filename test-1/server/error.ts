@@ -1,9 +1,9 @@
 // server/error.ts
-import { getRequestURL, setHeader } from "h3";
-import type { H3Error, H3Event } from "h3";
+import { getRequestURL, getRequestMethod, setHeader } from "h3";
 
-export default (error: H3Error, event?: H3Event) => {
+export default defineEventHandler((error) => {
   // 获取请求上下文（做非空判断，避免极端场景报错）
+  const event = error.event;
   // 生成唯一错误追踪ID（前后端日志联动排查）
   const traceId =
     Date.now().toString() + Math.random().toString(36).slice(2, 8);
@@ -11,12 +11,12 @@ export default (error: H3Error, event?: H3Event) => {
   // 构建最终错误响应体（可根据业务无限扩展字段）
   const errorRes = {
     httpCode: error.statusCode || 500, // HTTP标准状态码（必配）
-    bizCode: (error as any).code || 1000, // 自定义业务错误码（必配，1xxx系统/2xxx业务）
+    bizCode: error.code || 1000, // 自定义业务错误码（必配，1xxx系统/2xxx业务）
     msg: error.statusMessage || "服务端内部错误", // 用户友好提示（必配）
     detail: process.env.NODE_ENV === "development" ? error.message : undefined, // 详细错误（仅开发环境返回，防敏感信息泄露）
     traceId, // 错误追踪ID（推荐，方便日志排查）
     path: event ? getRequestURL(event).pathname : "/", // 出错接口路径（推荐）
-    method: event?.method || "UNKNOWN", // 请求方法（推荐）
+    method: event ? getRequestMethod(event) : "UNKNOWN", // 请求方法（推荐）
     timestamp: Date.now(), // 错误时间戳（推荐，前端可格式化）
   };
 
@@ -42,4 +42,4 @@ export default (error: H3Error, event?: H3Event) => {
 
   // 返回最终格式化的错误响应
   return errorRes;
-};
+});

@@ -40,7 +40,6 @@ export default defineNuxtConfig({
     },
   },
 
-
   // 运行时配置
   runtimeConfig: {
     // 私有配置（仅在服务端可用）
