@@ -1,39 +1,14 @@
 <template>
-  <div class="fixed top-4 right-4 z-50 flex items-center space-x-4">
-    <!-- 语言切换 -->
-    <USelect
-      v-model="currentLocale"
-      :options="locales"
-      option-attribute="name"
-      value-attribute="code"
-      icon="i-heroicons-language"
-      color="gray"
-      variant="outline"
-    />
-  </div>
-
   <NuxtLayout>
     <NuxtPage />
   </NuxtLayout>
 </template>
 
 <script setup lang="ts">
-import { useI18n } from '#imports';
-
-const { locale, locales, setLocale } = useI18n();
-
-// 语言切换计算属性
-const currentLocale = computed({
-  get: () => locale.value,
-  set: (value) => {
-    setLocale(value);
-  },
-});
-
-// 设置 body 背景色和 HTML lang 属性
+// 设置 body 背景色
 useHead({
   htmlAttrs: {
-    lang: locale,
+    lang: "zh-CN",
     dir: "ltr",
   },
   bodyAttrs: {

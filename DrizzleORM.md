@@ -179,3 +179,206 @@ npx drizzle-kit generate
 # 2. 执行迁移（创建/更新数据库表）
 npx drizzle-kit migrate
 ```
+## 多文件中的模式
+
+## 塑造数据模式
+Drizzle 模式由您正在使用的数据库中的几种模型类型组成。使用 Drizzle，您可以指定
+
+包含列、约束等的表。
+模式（仅限 PostgreSQL）
+枚举
+序列（仅限 PostgreSQL）
+视图
+物化视图
+等等。
+让我们逐一查看如何在 Drizzle 中定义模式。
+### 表和列声明
+Drizzle 中的表应至少定义 1 列，这与数据库中的要求相同。有一点很重要，Drizzle 中没有通用的表对象。您需要选择正在使用的方言，PostgreSQL、MySQL 或 SQLite。
+```ts
+import * as p from "drizzle-orm/sqlite-core";
+// 拓展：多表定义示例（保持统一语法风格）
+export const postsTable = p.sqliteTable("posts", {
+  id: p.integer().primaryKey().autoincrement(),
+  title: p.text().notNull(),
+  content: p.text(),
+  authorId: p.integer("author_id").notNull(), // 外键关联字段：TS authorId → 数据库 author_id
+  publishTime: p.text("publish_time"),
+});
+```
+默认情况下，Drizzle 将在数据库查询中使用 TypeScript 键名作为列名。因此，示例中的模式和查询将生成如下所示的 SQL 查询：
+
+### 驼峰命名与蛇形命名
+数据库模型名称通常使用 snake_case 约定，而在 TypeScript 中，通常使用 camelCase 命名模型。这可能导致模式中出现大量别名定义。为解决此问题，Drizzle 提供了一种在 Drizzle 数据库初始化时包含一个可选参数来自动将 TypeScript 中的 camelCase 映射到数据库中的 snake_case 的方法。
+
+对于这种映射，您可以在 Drizzle DB 声明中使用 casing 选项。此参数将帮助您指定数据库模型的命名约定，并将尝试相应地映射所有 JavaScript 键。
+### 高级
+您可以使用 Drizzle ORM 实现一些技巧。由于 Drizzle 完全存在于 TypeScript 文件中，因此您基本上可以在简单的 TypeScript 项目中对代码执行任何操作。
+
+一个常见功能是将列分离到不同的位置，然后重复使用它们。例如，考虑 updated_at、created_at 和 deleted_at 列。许多表/模型可能需要这三个字段来跟踪和分析系统中实体的创建、删除和更新。
+
+我们可以将这些列定义在一个单独的文件中，然后导入并将它们分散到您拥有的所有表对象中。
+```ts
+columns.helpers.ts（定义通用字段）
+typescript
+运行
+import * as p from "drizzle-orm/sqlite-core";
+import { usersTable } from "../schema";
+
+export const timestamps = {
+  createdAt: p.integer("created_at").notNull().default(Date.now()),
+  updatedAt: p.integer("updated_at"),
+  deletedAt: p.integer("deleted_at"),
+};
+
+export const commonStatus = {
+  status: p.integer().notNull().default(1),
+};
+
+export const operateUser = {
+  creatorId: p.integer("creator_id").references(() => usersTable.id),
+  updaterId: p.integer("updater_id").references(() => usersTable.id),
+};
+```
+使用 
+```ts
+import * as p from "drizzle-orm/sqlite-core";
+import { timestamps, commonStatus } from "../helpers/columns.helpers";
+
+export const usersTable = p.sqliteTable("users", {
+  id: p.integer().primaryKey().autoincrement(),
+  firstName: p.text("first_name").notNull(),
+  email: p.text().notNull().unique(),
+  ...commonStatus,
+  ...timestamps,
+});
+```
+目录
+```ts
+server/
+└── db/
+    ├── helpers/                # 【核心】DB层全局通用工具目录（所有子文件夹共享）
+    │   └── columns.helpers.ts  # 全局复用字段（timestamps/状态/通用外键等）
+    ├── schema/                 # 你的表结构定义文件夹（原schema）
+    │   ├── users.ts
+    │   ├── posts.ts
+    │   └── index.ts            # schema聚合入口
+    ├── queries/                # 数据库查询逻辑文件夹（如CRUD封装）
+    │   ├── userQueries.ts
+    │   └── postQueries.ts
+    │   └── index.ts            # 查询聚合入口
+    ├── migrations/             # Drizzle迁移文件文件夹（自动生成）
+    ├── connection.ts           # 全局单例数据库连接（原db.ts）
+    └── utils/                  # 其他DB工具文件夹（如数据转换/事务封装）
+        └── dbUtils.ts
+```
+### 模式
+```ts
+// 统一导入 SQLite 核心并指定别名 p，贴合你的写法规范
+import * as p from "drizzle-orm/sqlite-core";
+// 导入唯一字符串生成工具函数（posts 表 slug 动态默认值依赖）
+import { generateUniqueString } from "../utils";
+
+// ====================== 用户表（usersTable）======================
+export const usersTable = p.sqliteTable(
+  "users",
+  {
+    // SQLite 自增主键：integer() + primaryKey() + autoincrement() 组合
+    id: p.integer().primaryKey().autoincrement(),
+    // TS小驼峰 → 数据库蛇形命名，保持列别名规范
+    firstName: p.text("first_name"),
+    lastName: p.text("last_name"),
+    // 非空约束，配合唯一索引保证邮箱唯一性
+    email: p.text().notNull(),
+    // 自关联外键：引用当前表 id，AnySQLiteColumn 做类型注解避免TS报错
+    invitee: p.integer().references((): p.AnySQLiteColumn => usersTable.id),
+    // TS 字面量类型约束，限制角色只能是指定值，默认值 guest
+    role: p.text().$type<"guest" | "user" | "admin">().default("guest"),
+  },
+  // 表第三个参数：配置索引，邮箱唯一索引（优化查询+保证唯一性）
+  (table) => [p.uniqueIndex("email_idx").on(table.email)]
+);
+
+// 自动推导类型：查询/插入时使用，全程类型安全
+export type User = typeof usersTable.$inferSelect; // 查询返回的用户类型
+export type NewUser = typeof usersTable.$inferInsert; // 插入用户的参数类型（自动排除自增/默认字段）
+
+// ====================== 帖子表（postsTable）======================
+export const postsTable = p.sqliteTable(
+  "posts",
+  {
+    // SQLite 自增主键
+    id: p.integer().primaryKey().autoincrement(),
+    // 动态默认值：插入时自动执行函数生成16位唯一字符串，作为帖子唯一标识
+    slug: p.text().$default(() => generateUniqueString(16)),
+    title: p.text(),
+    // 外键关联：帖子所属用户，关联 usersTable.id，TS小驼峰→数据库蛇形命名
+    ownerId: p.integer("owner_id").references(() => usersTable.id),
+  },
+  // 配置索引：slug 唯一索引（防止重复）、title 普通索引（优化标题查询）
+  (table) => [
+    p.uniqueIndex("slug_idx").on(table.slug),
+    p.index("title_idx").on(table.title),
+  ]
+);
+
+// 自动推导帖子类型
+export type Post = typeof postsTable.$inferSelect;
+export type NewPost = typeof postsTable.$inferInsert;
+
+// ====================== 评论表（commentsTable）======================
+export const commentsTable = p.sqliteTable("comments", {
+  // SQLite 自增主键
+  id: p.integer().primaryKey().autoincrement(),
+  // 文本字段带长度软约束（SQLite 层面无强制，TS 层面做类型提示）
+  text: p.text({ length: 256 }),
+  // 外键关联：评论所属帖子，关联 postsTable.id
+  postId: p.integer("post_id").references(() => postsTable.id),
+  // 外键关联：评论发布用户，关联 usersTable.id
+  ownerId: p.integer("owner_id").references(() => usersTable.id),
+});
+
+// 自动推导评论类型
+export type Comment = typeof commentsTable.$inferSelect;
+export type NewComment = typeof commentsTable.$inferInsert;
+```
+# 数据库的链接
+server/db/connection.ts
+```ts
+// 导入 Drizzle ORM SQLite 适配器 + SQLite 驱动
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import Database from 'better-sqlite3';
+// 导入 Nuxt 4 内置日志（替代 console，更贴合 Nuxt 生态）
+import { consola } from 'consola';
+// 导入路径模块（处理 SQLite 数据库文件绝对路径）
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ====================== Nuxt 4 ESM 环境适配（解决 __dirname 缺失）======================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// ====================== 1. 创建 SQLite 数据库实例（指定数据库文件路径）======================
+// 数据库文件生成在 server/db/ 目录下，命名为 sqlite.db（可自定义，如 blog.db）
+const sqliteDb = new Database(path.join(__dirname, 'sqlite.db'), {
+  // 开发环境开启日志（查看执行的 SQL 语句），生产环境可关闭
+  verbose: process.env.NODE_ENV === 'development' ? console.log : null,
+});
+
+// ====================== 2. 创建 Drizzle ORM 全局连接实例 ======================
+// 关联数据库实例，开发环境开启 logger（控制台打印 SQL），生产环境关闭
+export const db = drizzle(sqliteDb, {
+  logger: process.env.NODE_ENV === 'development',
+});
+
+// ====================== 3. 连接成功/失败提示（方便开发调试）======================
+try {
+  // 执行简单查询验证连接
+  sqliteDb.prepare('SELECT 1;').run();
+  consola.success('✅ SQLite + Drizzle ORM 数据库连接成功（全局单例）');
+  consola.info(`📂 数据库文件路径：${path.join(__dirname, 'sqlite.db')}`);
+} catch (error) {
+  consola.fatal('❌ SQLite + Drizzle ORM 数据库连接失败', error);
+  // 连接失败直接终止服务
+  process.exit(1);
+}
+```
