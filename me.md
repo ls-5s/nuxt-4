@@ -4,4 +4,4 @@ html css javascript typescript nodejs
 工具 git
 状态管理 vuex  pinia
 api axios
-数据库 typeorm
+数据库 typeorm DizzleORM
