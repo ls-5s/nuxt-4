@@ -179,3 +179,165 @@ npx drizzle-kit generate
 # 2. 执行迁移（创建/更新数据库表）
 npx drizzle-kit migrate
 ```
+## 多文件中的模式
+你想要把 Drizzle 多文件 Schema 的示例（原 Postgres + src 目录）适配成 **Nuxt 项目 + SQLite** 的版本，核心是调整目录结构（贴合 Nuxt 的 `server/db` 规范）和 `drizzle.config.ts` 配置（适配 SQLite），同时保留多文件拆分表结构的设计思路。
+
+### 一、第一步：Nuxt 项目的目录结构（多文件 Schema）
+贴合 Nuxt 服务端代码的存放规范（`server` 目录），Schema 拆分后的目录结构如下：
+```
+📦 <项目根目录>
+ ├ 📂 server          // Nuxt 服务端核心目录
+ │  └ 📂 db           // 数据库相关所有文件
+ │     ├ 📂 schema    // 拆分的表结构文件（按业务分文件）
+ │     │  ├ 📜 users.ts    // 用户表
+ │     │  ├ 📜 products.ts // 产品表
+ │     │  └ 📜 messaging.ts// 消息表
+ │     ├ 📜 index.ts       // Nuxt 运行时的数据库连接（业务代码用）
+ │     └ 📜 sqlite.db      // SQLite 数据库文件（自动生成）
+ ├ 📂 drizzle         // 迁移文件目录（自动生成）
+ │  └ 📂 migrations
+ └ 📜 drizzle.config.ts // Drizzle CLI 配置文件
+```
+
+### 二、第二步：适配 Nuxt + SQLite 的 drizzle.config.ts
+核心修改：指定 SQLite 方言、指向 Nuxt 的 `server/db/schema` 目录、配置 SQLite 数据库文件路径：
+```typescript
+// drizzle.config.ts
+import { defineConfig } from "drizzle-kit";
+
+export default defineConfig({
+  dialect: "sqlite", // 适配 SQLite（替换原 postgresql）
+  schema: "./server/db/schema", // 指向 Nuxt 服务端的 schema 目录（递归读取所有.ts文件）
+  out: "./drizzle/migrations", // 迁移文件输出目录（项目根目录下）
+  // SQLite 专属：指定数据库文件路径（和 Nuxt 运行时连接的文件一致）
+  dbCredentials: {
+    url: "./server/db/sqlite.db",
+  },
+  verbose: true, // 可选：开启详细日志
+  strict: true,  // 可选：严格模式
+});
+```
+
+### 三、第三步：多文件 Schema 示例（拆分的表结构）
+每个表单独写在 `server/db/schema` 下的文件里，需导出表定义，Drizzle CLI 会自动递归读取：
+
+#### 1. users.ts（用户表）
+```typescript
+// server/db/schema/users.ts
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+
+// 定义用户表
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }), // 自增主键
+  name: text("name").notNull(), // 用户名（非空）
+  email: text("email").unique().notNull(), // 邮箱（唯一+非空）
+  age: integer("age"), // 年龄（可选）
+  createdAt: text("created_at").default(new Date().toISOString()), // 创建时间
+});
+
+// 可选：定义用户表的类型（方便 TS 类型提示）
+export type User = typeof users.$inferSelect; // 查询返回的类型
+export type NewUser = typeof users.$inferInsert; // 新增传入的类型
+```
+
+#### 2. products.ts（产品表）
+```typescript
+// server/db/schema/products.ts
+import { sqliteTable, text, integer, real } from "drizzle-orm/sqlite-core";
+
+// 定义产品表
+export const products = sqliteTable("products", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  name: text("name").notNull(),
+  price: real("price").notNull(), // 价格（浮点型）
+  stock: integer("stock").default(0), // 库存（默认0）
+  userId: integer("user_id").references(() => users.id), // 关联用户表（外键）
+});
+
+export type Product = typeof products.$inferSelect;
+export type NewProduct = typeof products.$inferInsert;
+```
+
+#### 3. messaging.ts（消息表）
+```typescript
+// server/db/schema/messaging.ts
+import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { users } from "./users"; // 关联用户表
+
+// 定义消息表
+export const messages = sqliteTable("messages", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  content: text("content").notNull(),
+  senderId: integer("sender_id").references(() => users.id), // 发送者（关联用户）
+  receiverId: integer("receiver_id").references(() => users.id), // 接收者（关联用户）
+  sentAt: text("sent_at").default(new Date().toISOString()),
+});
+
+export type Message = typeof messages.$inferSelect;
+export type NewMessage = typeof messages.$inferInsert;
+```
+
+### 四、第四步：Nuxt 运行时的数据库连接（业务代码用）
+创建 `server/db/index.ts`，封装数据库连接，方便接口/服务中导入使用：
+```typescript
+// server/db/index.ts
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import Database from "better-sqlite3";
+// 导入所有表（也可以按需导入，比如只导入users、products）
+import * as users from "./schema/users";
+import * as products from "./schema/products";
+import * as messaging from "./schema/messaging";
+
+// 连接 SQLite 数据库文件（路径和 drizzle.config.ts 中一致）
+const sqlite = new Database("./server/db/sqlite.db");
+// 创建 Drizzle ORM 客户端，关联所有表
+export const db = drizzle(sqlite, {
+  schema: {
+    ...users,
+    ...products,
+    ...messaging,
+  },
+});
+
+// 可选：导出所有表类型/表定义，方便业务代码直接用
+export * from "./schema/users";
+export * from "./schema/products";
+export * from "./schema/messaging";
+```
+
+### 五、第五步：使用示例（Nuxt 接口中操作数据库）
+比如创建 `server/api/users.get.ts`，查询所有用户：
+```typescript
+// server/api/users.get.ts
+import { db, users } from "../db/index";
+
+export default defineEventHandler(async () => {
+  // 查询所有用户（TS 类型自动提示）
+  const allUsers = db.select().from(users).all();
+  return {
+    code: 200,
+    data: allUsers,
+  };
+});
+```
+
+### 六、第六步：迁移命令（生成/执行迁移文件）
+在 `package.json` 中添加脚本，方便执行 Drizzle CLI 命令：
+```json
+{
+  "scripts": {
+    "db:generate": "drizzle-kit generate", // 生成迁移文件（对比 Schema 和数据库结构）
+    "db:migrate": "drizzle-kit migrate"    // 执行迁移（将 Schema 同步到数据库）
+  }
+}
+```
+执行流程：
+1. 写好 Schema 后，运行 `npm run db:generate` → 生成迁移文件到 `drizzle/migrations`；
+2. 运行 `npm run db:migrate` → 将迁移文件的 SQL 执行到 SQLite 数据库中（创建/修改表）。
+
+### 总结
+1. **目录适配**：把 Schema 放在 Nuxt 的 `server/db/schema` 下，贴合 Nuxt 服务端代码规范；
+2. **配置核心**：`drizzle.config.ts` 中 `dialect` 设为 `sqlite`，`schema` 指向 `server/db/schema`，`dbCredentials.url` 指向 SQLite 文件；
+3. **多文件拆分**：按业务拆分表到不同 `.ts` 文件，Drizzle CLI 会递归读取所有文件；
+4. **运行时连接**：单独封装 `server/db/index.ts`，统一管理数据库连接和表导入，方便业务代码使用；
+5. **迁移命令**：通过 npm 脚本快速生成/执行迁移，保证 Schema 和数据库结构一致。
