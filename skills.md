@@ -1,4 +1,5 @@
-### 一、完整使用流程（开发阶段：Nuxt4 + TailwindCSS + Pinia + Server）
+# Skills
+## 一、完整使用流程（开发阶段：Nuxt4 + TailwindCSS + Pinia + Server）
 核心是通过 `find-skills` 安装目标 Skill 后，用**精准自然语言指令**让 AI 辅助开发全流程，以下是可直接落地的步骤：
 
 #### 步骤1：安装目标 Skill（调用 `find-skills`）
@@ -116,7 +117,7 @@ export default defineEventHandler(async (event) => {
 3. 实现 Server 端获取数据后传递到 Pinia 状态（客户端复用）。
 ```
 
-### 二、完整部署流程（部署到 Vercel：Nuxt4 + Server 适配）
+## 二、完整部署流程（部署到 Vercel：Nuxt4 + Server 适配）
 #### 步骤1：部署前用 Skill 生成 Vercel 配置（关键）
 调用 `nuxt-vercel-best-practices` 生成适配 Nuxt4 的部署配置，复制指令执行：
 ```
@@ -190,7 +191,7 @@ vercel deploy --prod
 ```
 ✅ AI 会返回针对性修复方案（如调整 `vercel.json` 路由、修改 Edge Functions 代码为 ESM 规范）。
 
-### 三、关键注意事项（Nuxt4 Beta 专属）
+## 三、关键注意事项（Nuxt4 Beta 专属）
 1. **Skill 适配关键点**：所有指令必须加「Nuxt4 Beta」关键词，AI 会自动避开 Nuxt3 旧 API（如 `pages/` 路由），适配 Nuxt4 新 `app/` 路由、`server/` 目录；
 2. **Nuxt4 Beta 坑点**：
    - 避免使用 Node.js 内置模块（如 `fs`/`path`）在 Edge Functions 中（Vercel Edge 环境不支持）；
@@ -198,7 +199,7 @@ vercel deploy --prod
    - TailwindCSS 在 Server Components 中需开启 `css: true` 配置；
 3. **部署优化**：Nuxt4 推荐使用 Vercel Edge Runtime（`nitro.preset: 'vercel-edge'`），比 Node.js Runtime 性能更高，Skill 会自动推荐该配置。
 
-### 四、核心总结
+## 四、核心总结
 1. **使用流程**：安装 Skill → 初始化项目 → 开发中针对性调优 → 部署前配置优化；
 2. **部署流程**：本地验证 → Vercel CLI/Git 部署 → 部署后 Skill 排查问题；
 3. **关键技巧**：指令中明确标注「Nuxt4 Beta + TailwindCSS + Pinia + Server」，AI 会精准适配所有技术栈，避免 Nuxt3 旧写法。
