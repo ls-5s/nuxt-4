@@ -177,10 +177,9 @@ npm install -D drizzle-kit
 npx drizzle-kit generate
 
 # 2. 执行迁移（创建/更新数据库表）
-npx drizzle-kit migrate
+npx drizzle-kit migrates
 ```
 ## 多文件中的模式
-<<<<<<< HEAD
 你想要把 Drizzle 多文件 Schema 的示例（原 Postgres + src 目录）适配成 **Nuxt 项目 + SQLite** 的版本，核心是调整目录结构（贴合 Nuxt 的 `server/db` 规范）和 `drizzle.config.ts` 配置（适配 SQLite），同时保留多文件拆分表结构的设计思路。
 
 ### 一、第一步：Nuxt 项目的目录结构（多文件 Schema）
@@ -342,7 +341,6 @@ export default defineEventHandler(async () => {
 3. **多文件拆分**：按业务拆分表到不同 `.ts` 文件，Drizzle CLI 会递归读取所有文件；
 4. **运行时连接**：单独封装 `server/db/index.ts`，统一管理数据库连接和表导入，方便业务代码使用；
 5. **迁移命令**：通过 npm 脚本快速生成/执行迁移，保证 Schema 和数据库结构一致。
-=======
 
 ## 塑造数据模式
 Drizzle 模式由您正在使用的数据库中的几种模型类型组成。使用 Drizzle，您可以指定
@@ -545,4 +543,3 @@ try {
   process.exit(1);
 }
 ```
->>>>>>> f9938554199f605517098ea01cd9d04febfd2839

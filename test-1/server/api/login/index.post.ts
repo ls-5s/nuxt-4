@@ -1,5 +1,5 @@
 import { db } from "../../db/connection";
-import { users } from "../../db/schema";
+import { usersTable } from "../../db/schema";
 import { eq, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
@@ -16,8 +16,8 @@ export default defineEventHandler(async (event) => {
     // 验证用户
     const user = await db
       .select()
-      .from(users)
-      .where(and(eq(users.username, username), eq(users.password, password)))
+.from(usersTable)
+.where(and(eq(usersTable.username, username), eq(usersTable.password, password)))
       .get();
 
     if (!user) {

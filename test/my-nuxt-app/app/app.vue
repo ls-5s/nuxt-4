@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { ref, onMounted } from "vue";
+import { storeToRefs } from "pinia";
+import { useUserStore } from "~/stores/user";
+
 // 主题切换
 const isDark = ref(false);
 const applyTheme = (dark: boolean) => {
