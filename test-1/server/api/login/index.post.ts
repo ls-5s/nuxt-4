@@ -1,29 +1,47 @@
+import { db } from "../../db/connection";
+import { users } from "../../db/schema";
+import { eq, and } from "drizzle-orm";
+
 export default defineEventHandler(async (event) => {
   try {
-    const { name, password } = await readBody(event);
+    const { username, password } = await readBody(event);
 
-    if (name === "admin" && password === "123456") {
-      return {
-        code: 200,
-        message: "登录成功",
-        data: {
-          token: "1234567890",
-        },
-      };
+    if (!username || !password) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "用户名和密码不能为空",
+      });
     }
-    setResponseStatus(event, 401);
+
+    // 验证用户
+    const user = await db
+      .select()
+      .from(users)
+      .where(and(eq(users.username, username), eq(users.password, password)))
+      .get();
+
+    if (!user) {
+      throw createError({
+        statusCode: 401,
+        statusMessage: "账号或密码错误",
+      });
+    }
+
     return {
-      code: 401,
-      message: "账号或密码错误",
-      data: null,
+      code: 200,
+      message: "登录成功",
+      data: {
+        token: "mock-token-" + user.id,
+        userInfo: {
+          id: user.id,
+          username: user.username,
+        },
+      },
     };
   } catch (error) {
-    console.error("Login error:", error);
-    setResponseStatus(event, 500);
     return {
-      code: 500,
-      message: "服务器内部错误",
-      data: null,
+      code: error.statusCode || 500,
+      message: error.statusMessage || "登录失败",
     };
   }
 });
