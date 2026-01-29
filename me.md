@@ -5,3 +5,8 @@ html css javascript typescript nodejs
 状态管理 vuex  pinia
 api axios
 数据库 typeorm DizzleORM
+
+
+pnpm run db:studio
+pnpm run db:migrate
+pnpm run db:generate

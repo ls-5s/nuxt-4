@@ -505,41 +505,32 @@ export type NewComment = typeof commentsTable.$inferInsert;
 # 数据库的链接
 server/db/connection.ts
 ```ts
-// 导入 Drizzle ORM SQLite 适配器 + SQLite 驱动
-import { drizzle } from 'drizzle-orm/better-sqlite3';
-import Database from 'better-sqlite3';
-// 导入 Nuxt 4 内置日志（替代 console，更贴合 Nuxt 生态）
-import { consola } from 'consola';
-// 导入路径模块（处理 SQLite 数据库文件绝对路径）
-import path from 'path';
-import { fileURLToPath } from 'url';
+// 导入Drizzle ORM的libSQL适配器 - 用于连接SQLite/libSQL数据库，实现ORM核心操作（增删改查/联表/迁移等）
+import { drizzle } from "drizzle-orm/libsql";
+// 导入libSQL官方客户端 - 建立与SQLite/libSQL数据库的底层连接，Drizzle基于此连接做上层ORM封装
+import { createClient } from "@libsql/client";
+// 导入Node.js内置路径处理模块 - 解决不同操作系统（Windows/macOS/Linux）的路径分隔符差异，保证路径跨平台有效
+import path from "path";
+// 导入本地数据库模式定义 - 包含所有表结构、字段、索引、关联关系等schema定义，Drizzle通过schema做类型校验和SQL生成
+import * as schema from "./schema";
 
-// ====================== Nuxt 4 ESM 环境适配（解决 __dirname 缺失）======================
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// 解析数据库存储目录的绝对路径 - process.cwd()为项目根目录，拼接server/db作为数据库文件存放目录
+const dbDir = path.resolve(process.cwd(), "server/db");
+// 解析SQLite数据库文件的绝对路径 - 在dbDir目录下生成sqlite.db文件，作为本地数据库的物理文件
+const dbPath = path.resolve(dbDir, "sqlite.db");
 
-// ====================== 1. 创建 SQLite 数据库实例（指定数据库文件路径）======================
-// 数据库文件生成在 server/db/ 目录下，命名为 sqlite.db（可自定义，如 blog.db）
-const sqliteDb = new Database(path.join(__dirname, 'sqlite.db'), {
-  // 开发环境开启日志（查看执行的 SQL 语句），生产环境可关闭
-  verbose: process.env.NODE_ENV === 'development' ? console.log : null,
+// 创建libSQL客户端实例 - 建立与本地SQLite数据库的底层连接
+export const libsqlClient = createClient({
+  // 数据库连接地址 - file:协议表示本地文件型SQLite数据库，拼接绝对路径保证连接指向正确的物理文件
+  url: `file:${dbPath}`,
 });
 
-// ====================== 2. 创建 Drizzle ORM 全局连接实例 ======================
-// 关联数据库实例，开发环境开启 logger（控制台打印 SQL），生产环境关闭
-export const db = drizzle(sqliteDb, {
-  logger: process.env.NODE_ENV === 'development',
+// 创建Drizzle ORM核心实例 - 封装libSQL客户端，结合schema实现类型安全的数据库操作
+export const db = drizzle(libsqlClient, {
+  schema, // 关联数据库schema定义 - 开启Drizzle的类型校验，实现TS类型推断（如查询结果自动推导字段类型）
+  logger: process.env.NODE_ENV === "development", // 开发环境开启SQL日志 - 控制台打印执行的SQL语句，方便调试；生产环境关闭，减少性能开销
 });
 
-// ====================== 3. 连接成功/失败提示（方便开发调试）======================
-try {
-  // 执行简单查询验证连接
-  sqliteDb.prepare('SELECT 1;').run();
-  consola.success('✅ SQLite + Drizzle ORM 数据库连接成功（全局单例）');
-  consola.info(`📂 数据库文件路径：${path.join(__dirname, 'sqlite.db')}`);
-} catch (error) {
-  consola.fatal('❌ SQLite + Drizzle ORM 数据库连接失败', error);
-  // 连接失败直接终止服务
-  process.exit(1);
-}
+// 导出数据库文件绝对路径 - 供其他模块（如数据库迁移、备份、配置读取）复用该路径，避免重复解析
+export { dbPath };
 ```
