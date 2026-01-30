@@ -734,3 +734,32 @@ const targetUsers = await db
   .orderBy(usersTable.createdAt, "desc") // 按创建时间倒序
   .limit(5); // 只取前5条结果
 ```
+## 插入
+简单的插入
+```ts
+// ========== 单条数据插入语法（带返回值） ==========
+// await：等待数据库操作完成（异步操作必须加）
+// db：Drizzle ORM的数据库实例（已提前连接好数据库）
+// .insert(表名)：指定要插入数据的目标表（比如storyboards分镜表）
+// .values(单条数据对象)：传入要插入的一条数据，对象的key必须和表的字段名一致
+// .returning()：【可选】执行插入后，返回包含这条记录的数组（即使单条也是数组）
+// 解构数组：单条插入时返回值是长度为1的数组，用[变量名]解构出唯一的元素
+const [insertedSingleData] = await db.insert(表名).values(单条数据对象).returning(); 
+// insertedSingleData：拿到插入的单条完整数据（包含自增ID、默认值等所有字段）
+console.log('单条插入返回的完整数据：', insertedSingleData); // 输出示例：{ id: 101, title: "熊大警觉", duration: 3, ... }
+
+
+// ========== 批量数据插入语法（带返回值） ==========
+// .values([数据对象1, 数据对象2])：传入要插入的多条数据，用数组包裹多个数据对象
+// .returning()：【可选】执行批量插入后，返回包含所有插入记录的数组（数组长度=插入条数）
+const insertedBatchData = await db.insert(表名).values([数据对象1, 数据对象2]).returning(); 
+// insertedBatchData：拿到批量插入的所有完整数据（数组形式，每个元素是一条插入的记录）
+console.log('批量插入返回的完整数据数组：', insertedBatchData); 
+// 输出示例：[{ id: 101, ... }, { id: 102, ... }]
+
+// 按需遍历批量返回的结果
+insertedBatchData.forEach((item, index) => {
+  console.log(`第${index+1}条插入的数据：`, item);
+});
+```
+复杂的写法
