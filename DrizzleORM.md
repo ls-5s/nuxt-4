@@ -763,3 +763,224 @@ insertedBatchData.forEach((item, index) => {
 });
 ```
 复杂的写法
+```ts
+// ===================== 第一步：定义经典电商表结构（行业通用设计） =====================
+// server/db/schema.ts
+// 导入Drizzle ORM的SQLite表构建工具（经典依赖，适配轻量级数据库场景）
+import { sqliteTable, integer, text, real, unique, index } from 'drizzle-orm/sqlite-core';
+// 导入sql函数：用于生成数据库级默认值（经典设计，避免前端时间/随机值不一致）
+import { sql } from 'drizzle-orm';
+
+// ========== 经典表1：用户表（所有系统的核心基础表） ==========
+export const users = sqliteTable('users', {
+  // 自增主键：经典唯一标识，数据库自动生成，是所有表的基础设计
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // 用户名：非空，业务上用户必须有名称（经典必填字段）
+  username: text('username').notNull(),
+  // 手机号：非空+唯一约束 → 经典防重复注册设计，避免同一手机号多账号
+  phone: text('phone').notNull().unique(),
+  // 密码：非空（注：生产环境需用bcrypt加密，此处简化为明文，仅作示例）
+  password: text('password').notNull(),
+  // 创建时间：数据库自动生成当前本地时间 → 经典设计，避免前端时区/客户端时间篡改
+  createTime: text('create_time').default(sql`datetime('now', 'localtime')`),
+}, (table) => ({
+  // 给手机号加索引 → 经典查询优化，加快“按手机号查用户”的速度（高频查询场景）
+  phoneIdx: index('user_phone_idx').on(table.phone),
+}));
+
+// ========== 经典表2：商品表（电商核心基础表） ==========
+export const goods = sqliteTable('goods', {
+  // 自增主键：经典唯一标识
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // 商品名：非空，核心业务字段
+  name: text('name').notNull(),
+  // 价格：实数类型（支持小数）+ 非空 → 电商经典数值字段
+  price: real('price').notNull(),
+  // 分类：非空，用于商品归类（经典商品属性）
+  category: text('category').notNull(),
+  // 库存：整数+非空+默认0 → 经典库存设计，避免空值导致业务逻辑错误
+  stock: integer('stock').notNull().default(0),
+  // 创建时间：数据库自动生成
+  createTime: text('create_time').default(sql`datetime('now', 'localtime')`),
+}, (table) => ({
+  // 复合唯一键：商品名+分类 → 经典防重复设计，避免“同分类下重复商品名”
+  nameCategoryIdx: unique('goods_name_category_idx').on(table.name, table.category),
+}));
+
+// ========== 经典表3：订单表（用户-订单 一对多关联核心表） ==========
+export const orders = sqliteTable('orders', {
+  // 自增主键
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // 订单号：非空+默认随机生成 → 经典订单号设计（hex(randomblob(16))生成32位唯一字符串）
+  orderNo: text('order_no').notNull().default(sql`hex(randomblob(16))`),
+  // 用户ID：外键关联用户表 + 级联删除 → 经典关联设计：删用户时自动删其订单，避免脏数据
+  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  // 订单总价：实数+非空 → 经典订单金额字段
+  totalPrice: real('total_price').notNull(),
+  // 订单状态：非空+默认待支付 → 经典订单状态设计（pending/paid/shipped/completed）
+  status: text('status').notNull().default('pending'),
+  // 收货地址：非空，电商核心订单字段
+  address: text('address').notNull(),
+  // 创建时间：数据库自动生成
+  createTime: text('create_time').default(sql`datetime('now', 'localtime')`),
+});
+
+// ========== 经典表4：订单商品关联表（订单-商品 多对多核心表） ==========
+export const orderGoods = sqliteTable('order_goods', {
+  // 自增主键
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  // 订单ID：外键关联订单表 + 级联删除 → 删订单时自动删关联的订单商品
+  orderId: integer('order_id').notNull().references(() => orders.id, { onDelete: 'cascade' }),
+  // 商品ID：外键关联商品表 + 级联删除 → 删商品时自动删关联的订单商品
+  goodsId: integer('goods_id').notNull().references(() => goods.id, { onDelete: 'cascade' }),
+  // 商品名：冗余存储 → 经典“快照设计”：下单时记录商品名，避免后续商品名修改导致订单数据不一致
+  goodsName: text('goods_name').notNull(),
+  // 下单价格：冗余存储 → 经典“价格快照”：记录下单时的价格，避免商品价格变动导致订单金额异常
+  price: real('price').notNull(),
+  // 购买数量：整数+非空+默认1 → 经典商品购买数量设计
+  count: integer('count').notNull().default(1),
+});
+
+// ===================== 第二步：数据库连接（经典SQLite配置） =====================
+// server/db/connection.ts
+// 导入Drizzle ORM的SQLite适配器（经典轻量级数据库适配）
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+// 导入better-sqlite3（SQLite的Node.js驱动，经典选择）
+import Database from 'better-sqlite3';
+// 导入上面定义的表结构
+import * as schema from './schema';
+
+// 连接SQLite数据库文件（经典配置：文件名为classic_ecommerce.db，不存在则自动创建）
+const sqlite = new Database('classic_ecommerce.db');
+// 创建Drizzle ORM实例，关联数据库连接和表结构 → 经典初始化方式
+export const db = drizzle(sqlite, { schema });
+
+// ===================== 第三步：经典多表插入核心函数（覆盖99%场景） =====================
+// server/api/classic-insert.ts
+// 导入数据库连接实例
+import { db } from '@/server/db/connection';
+// 导入所有表结构
+import { users, goods, orders, orderGoods } from '@/server/db/schema';
+// 导入Drizzle核心工具：eq（精确匹配）、sql（数据库函数）
+import { eq, sql } from 'drizzle-orm';
+// 导入Nuxt4内置错误处理（经典前端友好提示设计）
+import { createError } from 'h3';
+
+/**
+ * 经典电商多表插入函数：用户→商品→订单→订单商品
+ * 核心设计：
+ * 1. 事务原子性：所有表插入要么全成功，要么全失败（避免脏数据）
+ * 2. 防重复插入：手机号/商品名+分类唯一约束，冲突时更新
+ * 3. 关联ID传递：基础表ID → 关联表外键（实现多表绑定）
+ * 4. 数据快照：订单商品冗余存储商品名/价格（保证订单数据稳定）
+ * 5. 类型转换/兜底：避免前端传参类型错误/缺失导致报错
+ */
+export async function classicEcommerceInsert() {
+  // 模拟前端传入的经典业务数据（实际开发中由前端接口传参）
+  const userForm = { username: '经典用户', phone: '13888888888', password: '123456' };
+  const goodsList = [
+    { name: '经典T恤', price: '99', category: '服饰', stock: '100' }, // 前端可能传字符串价格/库存
+    { name: '经典球鞋', price: '299', category: '鞋类', stock: '50' },
+  ];
+  const orderForm = { totalPrice: '398', address: '经典市经典区经典路1号' };
+
+  try {
+    // ========== 核心：开启事务（多表插入必加！经典原子性保障） ==========
+    const result = await db.transaction(async (tx) => {
+      // ------------------ 步骤1：插入用户表（单表单条，经典防重复） ------------------
+      const [insertedUser] = await tx
+        .insert(users) // 指定插入表：用户表
+        .values({
+          username: userForm.username, // 前端传入的用户名
+          phone: userForm.phone, // 前端传入的手机号（唯一键）
+          password: userForm.password, // 注：生产环境需加密，此处简化
+        })
+        .onConflictDoUpdate({ // 经典防重复逻辑：手机号冲突时更新用户名
+          target: users.phone, // 冲突字段：手机号（唯一键）
+          set: { username: sql`excluded.username` }, // excluded=待插入的新值
+        })
+        .returning({ id: users.id, username: users.username, phone: users.phone }); // 只返回需要的字段（经典性能优化）
+      // 提取用户自增ID → 核心：用于后续订单表关联
+      const userId = insertedUser.id;
+
+      // ------------------ 步骤2：插入商品表（单表批量，经典防重复+类型转换） ------------------
+      // 预处理商品数据：类型转换+字段兜底（经典前端传参兼容）
+      const processedGoods = goodsList.map(good => ({
+        name: good.name,
+        price: Number(good.price), // 经典转换：前端传字符串价格→数字
+        category: good.category,
+        stock: Number(good.stock) || 0, // 经典兜底：库存为空则填0
+      }));
+      const insertedGoods = await tx
+        .insert(goods) // 指定插入表：商品表
+        .values(processedGoods) // 批量插入预处理后的商品数据
+        .onConflictDoUpdate({ // 经典防重复：商品名+分类冲突时更新价格/库存
+          target: [goods.name, goods.category], // 复合唯一键
+          set: { 
+            price: sql`excluded.price`, // 更新价格为新值
+            stock: sql`excluded.stock`  // 更新库存为新值
+          },
+        })
+        .returning({ id: goods.id, name: goods.name, price: goods.price }); // 返回商品ID/名称/价格
+      // 构建商品名→ID/价格映射 → 经典：方便后续订单商品关联（避免重复查库）
+      const goodsMap = new Map(insertedGoods.map(g => [g.name, { id: g.id, price: g.price }]));
+
+      // ------------------ 步骤3：插入订单表（单表单条，经典关联用户） ------------------
+      const [insertedOrder] = await tx
+        .insert(orders) // 指定插入表：订单表
+        .values({
+          userId: userId, // 核心：关联用户表ID（实现用户-订单绑定）
+          totalPrice: Number(orderForm.totalPrice), // 转换：字符串总价→数字
+          address: orderForm.address, // 前端传入的收货地址
+        })
+        .returning({ id: orders.id, orderNo: orders.orderNo, totalPrice: orders.totalPrice }); // 返回订单核心字段
+      // 提取订单自增ID → 核心：用于后续订单商品关联
+      const orderId = insertedOrder.id;
+
+      // ------------------ 步骤4：插入订单商品表（单表批量，经典多对多关联） ------------------
+      const orderGoodsList = goodsList.map(good => ({
+        orderId: orderId, // 核心：关联订单表ID
+        goodsId: goodsMap.get(good.name)!.id, // 核心：关联商品表ID（通过映射获取）
+        goodsName: good.name, // 经典快照：冗余存储商品名
+        price: goodsMap.get(good.name)!.price, // 经典快照：冗余存储下单价格
+        count: 1, // 默认购买1件（可由前端传参）
+      }));
+      const insertedOrderGoods = await tx
+        .insert(orderGoods) // 指定插入表：订单商品关联表
+        .values(orderGoodsList) // 批量插入关联数据
+        .returning(); // 返回所有插入的订单商品数据
+
+      // ========== 事务内返回所有插入结果（经典：方便前端获取完整数据） ==========
+      return {
+        user: insertedUser, // 用户插入结果
+        goods: insertedGoods, // 商品插入结果
+        order: insertedOrder, // 订单插入结果
+        orderGoods: insertedOrderGoods, // 订单商品插入结果
+      };
+    });
+
+    // ========== 插入成功：返回标准化结果（经典前端友好格式） ==========
+    return {
+      code: 200, // 经典状态码：成功
+      msg: '经典电商多表插入成功', // 友好提示
+      data: result, // 所有插入结果
+    };
+  } catch (error) {
+    // ========== 全局错误处理（经典：服务端日志+前端友好提示） ==========
+    console.error('经典电商多表插入失败：', error); // 服务端日志（调试必备）
+    // 抛出Nuxt4友好错误，前端可捕获并提示用户
+    throw createError({
+      statusCode: 500, // 经典状态码：服务器错误
+      statusMessage: `经典插入失败：${(error as Error).message}`, // 错误详情
+    });
+  }
+}
+
+// ===================== 第四步：经典调用示例（实际开发中可通过接口触发） =====================
+// 调用函数并打印结果（测试用，实际开发中注释掉，由接口调用）
+// classicEcommerceInsert().then(res => {
+//   console.log('=== 经典多表插入结果 ===', JSON.stringify(res, null, 2));
+// }).catch(err => {
+//   console.error('=== 经典插入失败 ===', err.message);
+// });
+```
