@@ -10,7 +10,7 @@ api axios
 pnpm run db:studio
 pnpm run db:migrate
 pnpm run db:generate
-
+pnpm run db:db:import 
 =====================================
 
 📌 分开安装（按需选择，适合分步操作）

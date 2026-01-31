@@ -1,212 +1,254 @@
-# Skills
-## 一、完整使用流程（开发阶段：Nuxt4 + TailwindCSS + Pinia + Server）
-核心是通过 `find-skills` 安装目标 Skill 后，用**精准自然语言指令**让 AI 辅助开发全流程，以下是可直接落地的步骤：
+Nuxt 4 全栈开发 Skills 安装与配置指南（Trae IDE 适配版）
 
-#### 步骤1：安装目标 Skill（调用 `find-skills`）
-先调用榜单第4名的 `find-skills`（vercel-labs/skills），安装核心 Skill，复制以下指令直接执行：
-```
-用 find-skills 搜索并安装：
-1. nuxt-best-practices（出品方 nuxt-labs/agent-skills）
-2. nuxt-vercel-best-practices（出品方 nuxt-labs/agent-skills）
-3. tailwindcss-best-practices（出品方 vercel-labs/agent-skills）
-```
-✅ 执行结果：AI 会返回 Skill 安装成功的提示，并关联到你的 AI 助手/IDE 插件中。
+本指南专为 Trae IDE 优化（兼容 Cursor/Claude Code），帮你快速配置「Nuxt 4 + TailwindCSS + Pinia + Server + Nuxt UI + Web UI」专属 Skills，解决 AI 生成旧版代码、提示冗余、认证失败等问题，确保 AI 输出的代码直接适配 Nuxt 4 最新规范。
 
-#### 步骤2：用 Skill 初始化 Nuxt4 项目（一键生成规范模板）
-复制以下指令调用 `nuxt-best-practices`，AI 会生成**开箱即用的项目代码**（含 TailwindCSS/Pinia/Server 配置）：
-```
-帮我生成一个 Nuxt4 Beta 项目，要求：
-1. 基础配置：Vue3.4+、TypeScript、Vite 构建；
-2. 集成技术：TailwindCSS 3（开启 JIT 模式）、Pinia（状态管理）；
-3. Server 端：适配 Nuxt4 新 `server/` 目录，包含 API 示例、Edge Functions 模板；
-4. 规范要求：符合 Nuxt 官方最佳实践，组件拆分、Composables 分层、TS 类型全覆盖；
-5. 优化项：TailwindCSS 打包体积优化、Pinia 服务端/客户端状态同步、Server API 错误处理。
-```
-✅ AI 返回结果：
-- 完整的项目目录结构（含 `nuxt.config.ts`/`tailwind.config.ts`/`stores/`/`server/`）；
-- 关键文件代码（如下），直接复制到本地即可初始化项目。
 
-##### 生成的核心配置文件示例（可直接复用）：
-```ts
-// nuxt.config.ts（Nuxt4 + Tailwind + Pinia 核心配置）
-export default defineNuxtConfig({
-  modules: [
-    '@nuxtjs/tailwindcss', // Tailwind 集成
-    '@pinia/nuxt' // Pinia 集成（Nuxt4 内置适配）
-  ],
-  tailwindcss: {
-    jit: true, // 开启 JIT 模式（Nuxt4 + Vite 最优）
-    cssPath: '~/assets/css/tailwind.css',
-    configPath: 'tailwind.config.ts'
-  },
-  nitro: { // Nuxt4 Server 端核心（Nitro 引擎）
-    preset: 'vercel-edge', // 适配 Vercel Edge Functions
-    routeRules: {
-      '/api/**': { cors: true, cache: 'no-cache' } // Server API 配置
-    }
-  },
-  typescript: {
-    strict: true, // TS 严格模式（最佳实践）
-    typeCheck: true
-  }
-})
+---
+📌 什么是 Skills？
 
-// tailwind.config.ts（优化配置）
-export default {
-  content: [
-    './components/**/*.{vue,ts}',
-    './pages/**/*.{vue,ts}',
-    './app/**/*.{vue,ts}',
-    './layouts/**/*.{vue,ts}'
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: []
-}
+Trae IDE 中的 Skills（技能包），是官方提供的 AI 助手能力扩展与规范约束包，用于定义特定技术栈的开发标准、语法规则及能力边界，帮助 AI 助手精准适配开发者的技术选型，确保生成代码符合项目开发规范与工具适配要求。
 
-// stores/counter.ts（Pinia TS 规范示例）
-import { defineStore } from 'pinia'
+- 🎯 指定技术栈版本规范：明确当前开发所使用的 Nuxt 4 Beta 版本，区分于 Nuxt 2/3，避免 AI 生成过时 API（如混淆 app/ 与 pages/ 目录）；
 
-export const useCounterStore = defineStore('counter', {
-  state: () => ({ count: 0 }),
-  actions: {
-    increment() {
-      this.count++
-    }
-  },
-  persist: true // 可选：状态持久化（Nuxt4 适配）
-})
+- 📝 定义代码编写标准：约束 AI 助手严格遵循 Vue 3 组合式 API、Pinia 模块化、Tailwind 原子化样式等官方推荐写法，保障代码规范性；
 
-// server/api/hello.ts（Server API 示例）
-export default defineEventHandler(async (event) => {
-  const query = getQuery(event)
-  // 错误处理（最佳实践）
-  if (!query.name) {
-    throw createError({ statusCode: 400, statusMessage: 'Name is required' })
-  }
-  return {
-    message: `Hello ${query.name}! (Nuxt4 Server API)`
-  }
-})
-```
+- ❌ 屏蔽不兼容语法：禁止 AI 助手使用与 Nuxt 4 不兼容的第三方库及过时语法（如旧版 useAsyncData 配置），规避版本适配问题。
 
-#### 步骤3：开发阶段用 Skill 优化代码（针对性调优）
-根据开发中的痛点，调用对应 Skill 优化，以下是高频场景的指令：
-##### 场景1：优化 TailwindCSS 样式（调用 `tailwindcss-best-practices`）
-```
-帮我优化 Nuxt4 中 TailwindCSS 的使用：
-1. 提取重复样式为自定义工具类（如 btn-primary、card-container）；
-2. 关闭冗余的 PurgeCSS 配置（Nuxt4 + Vite JIT 模式无需手动配置）；
-3. 适配 Nuxt4 Server Components 的样式隔离。
-```
+核心价值：默认 AI 训练数据未同步 Nuxt 4 最新变动，配置专属 Skills 后，AI 生成的代码无需手动改就能跑，彻底避免「版本不兼容报错」。
 
-##### 场景2：优化 Pinia 状态管理（调用 `nuxt-best-practices`）
-```
-帮我检查并优化 Nuxt4 中 Pinia 的使用：
-1. 确保 TS 类型全覆盖（State/Action/Getter）；
-2. 解决服务端/客户端 hydration 不匹配问题；
-3. 优化 Composables 中调用 Pinia 的逻辑（避免重复创建 store）。
-```
 
-##### 场景3：优化 Server 端（调用 `nuxt-vercel-best-practices`）
-```
-帮我优化 Nuxt4 Server 端：
-1. server/api 接口的性能（添加缓存、限流）；
-2. Edge Functions 适配 Vercel 部署（避免 Node.js 内置模块依赖）；
-3. 实现 Server 端获取数据后传递到 Pinia 状态（客户端复用）。
-```
+---
+📋 第一步：准备工作（必做）
 
-## 二、完整部署流程（部署到 Vercel：Nuxt4 + Server 适配）
-#### 步骤1：部署前用 Skill 生成 Vercel 配置（关键）
-调用 `nuxt-vercel-best-practices` 生成适配 Nuxt4 的部署配置，复制指令执行：
-```
-帮我生成 Nuxt4 部署到 Vercel 的最佳配置：
-1. 生成 vercel.json（适配 Nuxt4 Nitro 引擎、Edge Functions）；
-2. 优化构建脚本（避免 Nuxt4 Beta 构建失败）；
-3. 配置环境变量（区分开发/生产/预览环境）；
-4. 给出部署命令和注意事项。
-```
-✅ 生成的 `vercel.json` 示例：
-```json
-{
-  "version": 2,
-  "builds": [
-    {
-      "src": "nuxt.config.ts",
-      "use": "@vercel/node-bridge",
-      "config": { "runtime": "nodejs20.x" }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/.output/server/index.mjs"
-    }
-  ],
-  "env": {
-    "NUXT_NODE_ENV": "production",
-    "NUXT_VERCEL_ENV": "@vercel/env"
-  }
-}
-```
+1. 环境前置检查
 
-#### 步骤2：本地验证部署配置
-在项目根目录执行以下命令，验证 Nuxt4 构建是否正常：
-```bash
-# 安装 Vercel CLI
-npm i -g vercel
-# 本地构建（模拟 Vercel 部署）
-nuxt build
-# 本地预览构建产物
-nuxt preview
-```
-✅ 验证通过：本地访问 `http://localhost:3000`，能正常访问页面、调用 `server/api/hello` 接口。
+确保你的环境满足以下要求（Nuxt 4 核心依赖）：
 
-#### 步骤3：部署到 Vercel（两种方式）
-##### 方式1：Vercel CLI 部署（快速测试）
-```bash
-# 登录 Vercel（首次需要扫码/授权）
-vercel login
-# 部署到 Vercel（选择项目、环境）
-vercel deploy --prod
-```
+- Node.js ≥ 20.0.0（推荐 20.x LTS）
 
-##### 方式2：Git 集成部署（生产环境推荐）
-1. 将项目推送到 GitHub/GitLab/Gitee；
-2. 打开 Vercel 官网 → 新建项目 → 导入该仓库；
-3. 配置构建参数（Skill 已生成，直接用默认值）：
-   - Framework Preset：Nuxt.js
-   - Build Command：`nuxt build`
-   - Output Directory：`.output`
-4. 点击「Deploy」，等待部署完成。
+- Git ≥ 2.30.0
 
-#### 步骤4：部署后用 Skill 排查问题（高频踩坑）
-若部署后出现「构建失败、Server API 404、Edge Functions 报错」，调用 `nuxt-vercel-best-practices` 排查：
-```
-我的 Nuxt4 项目部署到 Vercel 后出现以下问题：
-1. server/api/hello 接口返回 404；
-2. Edge Functions 提示 "Cannot use import statement outside a module"；
-帮我排查并给出修复方案。
-```
-✅ AI 会返回针对性修复方案（如调整 `vercel.json` 路由、修改 Edge Functions 代码为 ESM 规范）。
+- Trae IDE 已安装并更新至最新版本
 
-## 三、关键注意事项（Nuxt4 Beta 专属）
-1. **Skill 适配关键点**：所有指令必须加「Nuxt4 Beta」关键词，AI 会自动避开 Nuxt3 旧 API（如 `pages/` 路由），适配 Nuxt4 新 `app/` 路由、`server/` 目录；
-2. **Nuxt4 Beta 坑点**：
-   - 避免使用 Node.js 内置模块（如 `fs`/`path`）在 Edge Functions 中（Vercel Edge 环境不支持）；
-   - Pinia 持久化需用 `@pinia-plugin-persistedstate/nuxt`（Nuxt4 适配版）；
-   - TailwindCSS 在 Server Components 中需开启 `css: true` 配置；
-3. **部署优化**：Nuxt4 推荐使用 Vercel Edge Runtime（`nitro.preset: 'vercel-edge'`），比 Node.js Runtime 性能更高，Skill 会自动推荐该配置。
+补充：执行以下命令验证环境版本，若版本过低可通过 nvm 升级（以 macOS/Linux 为例）：
 
-## 四、核心总结
-1. **使用流程**：安装 Skill → 初始化项目 → 开发中针对性调优 → 部署前配置优化；
-2. **部署流程**：本地验证 → Vercel CLI/Git 部署 → 部署后 Skill 排查问题；
-3. **关键技巧**：指令中明确标注「Nuxt4 Beta + TailwindCSS + Pinia + Server」，AI 会精准适配所有技术栈，避免 Nuxt3 旧写法。
+# 验证 Node.js 版本（需 ≥20.0.0）
+node -v
+# 验证 Git 版本（需 ≥2.30.0）
+git -v
+# 若 Node 版本过低，用 nvm 升级（macOS/Linux）
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+nvm install 20
+nvm use 20
 
-这套流程是当前 Nuxt4 Beta 生态下，结合官方 Skill 的最优实践，覆盖「开发→部署→排障」全流程，直接复用即可落地！
+2. 安装 Skills CLI（全局）
 
-# skills 排行榜
-```
-https://skills.sh/
-```
+Skills CLI 是管理 Trae IDE 技能库的核心工具，全局安装后可在任意项目使用：
+
+# 全局安装 Skills CLI
+npm install -g skills
+
+# 验证安装成功（出现版本号即正常）
+skills --version
+
+3. 清理历史缓存（避免冲突）
+
+如果之前尝试过安装 Skills，先清理缓存确保获取最新内容：
+
+skills cache clean
+
+
+---
+🚀 第二步：精准安装核心 Skills（避坑版）
+
+关键优化：改用 HTTPS 地址替代 SSH，避免「Authentication failed」认证失败；拆分命令，减少全量安装冗余。
+
+1. 安装 Nuxt 4 核心全栈能力（首选适配仓库）
+
+# 用 HTTPS 安装，-g 全局生效，-y 自动确认（仅装核心 Nuxt 4 技能）
+skills add https://github.com/onmax/nuxt-skills.git -y -g
+
+- ✅ 包含能力：Nuxt 4 目录规范（app//server/）、Nuxthub 部署/数据库、Nuxt UI 组件库最佳实践
+
+- ✅ 核心优势：目前最适配 Nuxt 4 Beta 的 Skills 仓库，完全规避旧版 Nuxt 3 写法。
+
+2. 安装 Pinia + Vue 3 最佳实践（官方标准）
+
+skills add https://github.com/antfu/skills.git -y -g
+
+- ✅ 包含能力：Pinia Setup Store 写法、Vue 3 组合式 API 规范、响应式数据最佳实践
+
+- ✅ 核心优势：由 Vue/Vite 核心成员 Anthony Fu 维护，确保语法 100% 符合官方标准。
+
+3. 安装 TailwindCSS 原子化样式能力
+
+# 指定 tailwind-design-system 分支，精准安装仅 Tailwind 相关技能
+skills add https://github.com/wshobson/agents.git@tailwind-design-system -y -g
+
+- ✅ 包含能力：Tailwind 工具类优先级、自定义主题配置、响应式布局规范
+
+- ✅ 核心优势：强制 AI 写原子化类名（如 flex items-center），而非传统 CSS。
+
+4. 安装 Web UI 设计规范
+
+skills add https://github.com/vercel-labs/agent-skills.git@web-design-guidelines -y -g
+
+- ✅ 包含能力：现代化 UI 间距/排版/色彩规范、Nuxt UI 与 Tailwind 适配技巧
+
+- ✅ 核心优势：提升 AI 生成页面的美观度和交互合理性。
+
+补充：若出现网络问题导致克隆失败，可使用手动克隆兜底方案（以 nuxt-skills 为例）：
+
+# 第一步：找到 Trae IDE Skills 全局目录（不同系统路径）
+# Windows: %USERPROFILE%\.skills
+# macOS/Linux: ~/.skills
+mkdir -p ~/.skills/nuxt-skills
+git clone https://github.com/onmax/nuxt-skills.git ~/.skills/nuxt-skills
+# 第二步：手动启用该 Skills
+skills enable -g nuxt-skills
+
+其他 Skills 手动克隆方法同理，将仓库地址和目录名对应替换即可。
+
+
+---
+🧹 第三步：精简 Skills（关键！避免 AI 提示冗余）
+
+安装上述仓库会附带 React、Slidev、Vitest 等无关技能，需清理后确保 AI 只聚焦 Nuxt 4 技术栈：
+
+方式 1：一键精简（推荐）
+
+# 全局卸载冗余 Skills，-y 自动确认
+skills remove -g -y \
+antfu document-writer motion nuxt-better-auth nuxt-content reka-ui slidev ts-library tsdown turborepo unocss \
+vercel-composition-patterns vercel-react-best-practices vercel-react-native-skills \
+vitepress vitest vue-testing-best-practices pnpm vite vue-router-best-practices nuxt-seo vueuse vueuse-functions
+
+方式 2：手动筛选（更精准）
+
+若一键命令报错，可先查看已安装的全局 Skills，再逐个删除无关项：
+
+# 查看所有全局 Skills
+skills list -g
+
+# 示例：删除单个冗余 Skill
+skills remove -g vercel-react-best-practices -y
+
+精简逻辑：只保留「Nuxt 4 + Vue 3 + Pinia + Tailwind + Nuxt UI」相关技能，删除 React、通用构建工具、测试框架等无关项，让 AI 提示更精准。
+
+
+---
+✅ 第四步：双重验证安装结果
+
+1. 命令行验证
+
+执行以下命令，确认最终保留的 Skills 符合预期：
+
+skills list -g
+
+理想结果（纯净 Nuxt 4 技术栈）：
+
+- nuxt (Nuxt 4 核心)
+- vue (Vue 3 基础)
+- pinia (状态管理)
+- nuxt-ui (组件库)
+- tailwind-design-system (Tailwind 规范)
+- web-design-guidelines (UI 设计原则)
+- nuxthub (Server/部署)
+
+2. Trae IDE 可视化验证（关键）
+
+1. 打开 Trae IDE → 左侧「AI 助手」→ 进入「规则和技能」面板；
+
+2. 切换到「全局」标签页（全局安装的 Skills 仅在此显示）；
+
+3. 确认上述核心 Skills 均为「已启用」状态（开关绿色）；
+
+4. 若显示「已禁用」，点击开关启用后刷新页面。
+
+
+---
+📖 第五步：Skills 实战使用教程（纯规范化提问版）
+
+配置好 Skills 后，只需通过规范化提问，就能让 Trae IDE 的 AI 助手精准调用对应 Skills，生成符合 Nuxt 4 技术栈规范的代码。以下是核心场景的标准化提问模板（可直接复制使用）：
+
+🔧 基础操作：打开 AI 助手
+
+1. 打开 Nuxt 4 项目（补充：完整初始化命令如下）；
+
+2. 启动 AI 助手：按下快捷键 Ctrl+/（Windows）/ Cmd+/（macOS），或点击 Trae IDE 左侧「AI 助手」图标（机器人样式）。
+
+# 初始化 Nuxt 4 项目（最新 Beta 版）
+npx nuxi init@latest my-nuxt4-project
+cd my-nuxt4-project
+# 安装核心依赖（Nuxt UI + Pinia + TailwindCSS）
+npm install @nuxt/ui pinia @pinia/nuxt @nuxtjs/tailwindcss
+# 配置 nuxt.config.ts（启用核心模块）
+echo 'export default defineNuxtConfig({
+  modules: ["@nuxt/ui", "@pinia/nuxt", "@nuxtjs/tailwindcss"]
+})' > nuxt.config.ts
+# 启动开发服务器
+npm run dev
+
+🎯 场景 1：生成 Nuxt 4 Server API 接口
+
+基于 Nuxt 4 官方最佳实践，开发 server/api 目录下的用户注册接口，要求：
+1. 接收 username、email、password 三个参数并完成基础参数校验；
+2. 输出标准 JSON 格式响应（包含状态码、提示信息）；
+3. 严格遵循 Nuxt 4 Server 目录规范和语法要求；
+4. 适配 Nuxt 4 Beta 版本，禁用所有过时 API。
+
+🎯 场景 2：生成 Nuxt UI + TailwindCSS 登录表单
+
+基于 Nuxt 4 + Nuxt UI + TailwindCSS 最佳实践，开发登录表单组件，要求：
+1. 组件路径遵循 Nuxt 4 官方目录规范；
+2. 使用 Nuxt UI 官方组件，搭配 TailwindCSS 原子化样式开发；
+3. 适配移动端响应式布局，符合 Web UI 设计的间距/排版/色彩规范；
+4. 包含账号、密码输入框及登录按钮，交互逻辑简洁且符合 Nuxt 4 规范。
+
+🎯 场景 3：生成 Pinia 状态管理 Store
+
+基于 Vue 3 组合式 API 和 Pinia 官方最佳实践，为 Nuxt 4 项目开发主题管理 Store，要求：
+1. 包含 darkMode 状态变量，支持深色模式切换方法；
+2. 实现状态持久化存储，避免 Nuxt 4 服务端渲染水合错误；
+3. 采用 Pinia Setup Store 写法，符合 Nuxt 4 集成规范。
+
+🎯 场景 4：生成 Nuxt 4 页面/通用组件
+
+基于 Nuxt 4 最佳实践，开发 app 目录下的首页页面组件，要求：
+1. 集成 Nuxt UI 基础布局组件，搭配 TailwindCSS 完成样式设计；
+2. 严格遵循 Nuxt 4 客户端/服务端组件的区分规范；
+3. 符合 Web UI 设计的通用规范，保证页面美观性和兼容性。
+
+💡 通用极简提问模板（万能套用）
+
+基于 Nuxt 4 最佳实践，实现【具体功能】，要求：
+1. 技术栈约束：Nuxt 4 + 【Pinia/TailwindCSS/Nuxt UI/Server】；
+2. 遵循 Nuxt 4 官方目录规范和语法要求；
+3. 禁用过时 API，适配 Nuxt 4 Beta 版本。
+
+
+---
+❓ 常见问题解决
+
+- 1. 安装时提示「Authentication failed」
+→ 改用指南中的 HTTPS 地址重新安装，若仍失败，使用手动克隆兜底方案。
+
+- 2. AI 仍生成旧版代码
+→ 重新执行「精简 Skills」步骤，重启 Trae IDE。
+
+- 3. Skills 已安装但 IDE 不显示
+→ 执行 skills cache clean → 重启 Trae IDE → 刷新「规则和技能」面板。
+
+
+---
+### 总结
+
+1. 核心原则：HTTPS 安装避认证失败，精简 Skills 避提示冗余；
+
+2. 验证关键：命令行 + Trae IDE 双验证，确保核心 Skills 全局启用；
+
+3. 使用技巧：提问需明确「Nuxt 4 规范 + 技术栈 + 功能要求」，AI 自动调用 Skills 生成合规代码；
+
+4. 核心价值：配置后 AI 代码无需修改，直接适配 Nuxt 4 规范；
+
+5. 版本提醒：Nuxt 4 仍处于 Beta 阶段，API 可能迭代更新，建议每月执行一次 skills update -g 升级 Skills，确保与最新规范同步。
