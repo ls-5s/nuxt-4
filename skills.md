@@ -252,3 +252,4 @@ npm run dev
 4. 核心价值：配置后 AI 代码无需修改，直接适配 Nuxt 4 规范；
 
 5. 版本提醒：Nuxt 4 仍处于 Beta 阶段，API 可能迭代更新，建议每月执行一次 skills update -g 升级 Skills，确保与最新规范同步。
+# https://skills.sh/    我给补充一个skills的排行榜，大家可以自取
