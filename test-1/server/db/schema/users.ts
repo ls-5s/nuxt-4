@@ -9,6 +9,8 @@ export const usersTable = p.sqliteTable("users", {
 
   password: p.text().notNull(),
 
+  role: p.text(),
+
   // 创建时间
-  createdAt: p.integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
+  createdAt: p.integer("created_at", { mode: "timestamp" }),
 });
