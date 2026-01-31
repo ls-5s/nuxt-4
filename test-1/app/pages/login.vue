@@ -59,7 +59,7 @@ const handleLogin = async () => {
   isError.value = false;
 
   try {
-    const res = await $fetch('/api/login', {
+    const res = await $fetch<any>('/api/login', {
       method: 'POST',
       body: form
     });
@@ -86,7 +86,7 @@ const handleRegister = async () => {
   isError.value = false;
 
   try {
-    const res = await $fetch('/api/register', {
+    const res = await $fetch<any>('/api/register', {
       method: 'POST',
       body: form
     });

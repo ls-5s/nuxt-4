@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
       message: "发布成功",
       data: newPost,
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       code: error.statusCode || 500,
       message: error.statusMessage || "发布失败",

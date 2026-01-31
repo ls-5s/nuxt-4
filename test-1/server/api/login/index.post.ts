@@ -4,7 +4,9 @@ import { eq, and } from "drizzle-orm";
 
 export default defineEventHandler(async (event) => {
   try {
-    const { username, password } = await readBody(event);
+    const body = await readBody(event);
+    const username = body?.username || body?.name;
+    const password = body?.password;
 
     if (!username || !password) {
       throw createError({
@@ -16,8 +18,8 @@ export default defineEventHandler(async (event) => {
     // 验证用户
     const user = await db
       .select()
-.from(usersTable)
-.where(and(eq(usersTable.username, username), eq(usersTable.password, password)))
+      .from(usersTable)
+      .where(and(eq(usersTable.username, username), eq(usersTable.password, password)))
       .get();
 
     if (!user) {
@@ -38,7 +40,7 @@ export default defineEventHandler(async (event) => {
         },
       },
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       code: error.statusCode || 500,
       message: error.statusMessage || "登录失败",

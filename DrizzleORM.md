@@ -984,3 +984,18 @@ export async function classicEcommerceInsert() {
 //   console.error('=== 经典插入失败 ===', err.message);
 // });
 ```
+## 删除export default defineEventHandler(async (event) => {
+  try {
+    // 修复：同时兼容 username 和 name 字段
+    const body = await readBody(event);
+    const username = body?.username || body?.name;
+    const password = body?.password;
+
+    if (!username || !password) {
+      throw createError({
+        statusCode: 400,
+        statusMessage: "用户名和密码不能为空",
+      });
+    }
+
+    // ... 后续数据库查询代码 ...

@@ -3,69 +3,69 @@
     <!-- 介绍部分 -->
     <section>
       <h2 class="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-        {{ $t('demo.title') }}
-        <NuxtLink to="/">{{ $t('demo.backHome') }}</NuxtLink>
+        Nuxt 4 主题演示
+        <NuxtLink to="/">返回首页</NuxtLink>
       </h2>
       <p class="text-lg text-gray-600 dark:text-gray-400">
-        {{ $t('demo.description') }}
+        这是一个使用 Nuxt 4、TypeScript 和 Tailwind CSS 构建的标准化前端项目示例。包含主题切换、配色方案切换和完整的按钮组件系统。
       </p>
     </section>
 
     <!-- 按钮组件演示 -->
     <section>
       <h3 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-        {{ $t('demo.buttons.title') }}
+        按钮组件演示
       </h3>
 
       <!-- 尺寸演示 -->
       <div class="mb-8">
         <h4 class="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">
-          {{ $t('demo.buttons.sizes.title') }}
+          尺寸
         </h4>
         <div class="flex flex-wrap items-center gap-4">
-          <Button size="xs">{{ $t('demo.buttons.sizes.xs') }}</Button>
-          <Button size="sm">{{ $t('demo.buttons.sizes.sm') }}</Button>
-          <Button size="md">{{ $t('demo.buttons.sizes.md') }}</Button>
-          <Button size="lg">{{ $t('demo.buttons.sizes.lg') }}</Button>
-          <Button size="xl">{{ $t('demo.buttons.sizes.xl') }}</Button>
+          <Button size="xs">超小 (XS)</Button>
+          <Button size="sm">小 (SM)</Button>
+          <Button size="md">中 (MD)</Button>
+          <Button size="lg">大 (LG)</Button>
+          <Button size="xl">超大 (XL)</Button>
         </div>
       </div>
 
       <!-- 变体演示 -->
       <div class="mb-8">
         <h4 class="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">
-          {{ $t('demo.buttons.variants.title') }}
+          变体
         </h4>
         <div class="flex flex-wrap items-center gap-4">
-          <Button variant="solid">{{ $t('demo.buttons.variants.solid') }}</Button>
-          <Button variant="outline">{{ $t('demo.buttons.variants.outline') }}</Button>
-          <Button variant="ghost">{{ $t('demo.buttons.variants.ghost') }}</Button>
-          <Button variant="soft">{{ $t('demo.buttons.variants.soft') }}</Button>
-          <Button variant="link">{{ $t('demo.buttons.variants.link') }}</Button>
+          <Button variant="solid">实心</Button>
+          <Button variant="outline">描边</Button>
+          <Button variant="ghost">幽灵</Button>
+          <Button variant="soft">柔和</Button>
+          <Button variant="link">链接</Button>
         </div>
       </div>
 
       <!-- 意图/颜色演示 -->
       <div class="mb-8">
         <h4 class="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">
-          {{ $t('demo.buttons.intents.title') }}
+          意图/颜色
         </h4>
         <div class="space-y-4">
           <div class="flex flex-wrap items-center gap-4">
-            <Button intent="primary">{{ $t('demo.buttons.intents.primary') }}</Button>
-            <Button intent="secondary">{{ $t('demo.buttons.intents.secondary') }}</Button>
-            <Button intent="success">{{ $t('demo.buttons.intents.success') }}</Button>
-            <Button intent="warning">{{ $t('demo.buttons.intents.warning') }}</Button>
-            <Button intent="danger">{{ $t('demo.buttons.intents.danger') }}</Button>
-            <Button intent="neutral">{{ $t('demo.buttons.intents.neutral') }}</Button>
+            <Button intent="primary">主要</Button>
+            <Button intent="secondary">次要</Button>
+            <Button intent="success">成功</Button>
+            <Button intent="warning">警告</Button>
+            <Button intent="danger">危险</Button>
+            <Button intent="neutral">中性</Button>
           </div>
           <div class="flex flex-wrap items-center gap-4">
-            <Button variant="outline" intent="primary">{{ $t('demo.buttons.intents.primary') }}</Button>
-            <Button variant="outline" intent="secondary">{{ $t('demo.buttons.intents.secondary') }}</Button>
-            <Button variant="outline" intent="success">{{ $t('demo.buttons.intents.success') }}</Button>
-            <Button variant="outline" intent="warning">{{ $t('demo.buttons.intents.warning') }}</Button>
-            <Button variant="outline" intent="danger">{{ $t('demo.buttons.intents.danger') }}</Button>
-            <Button variant="outline" intent="neutral">{{ $t('demo.buttons.intents.neutral') }}</Button>
+            <Button variant="outline" intent="primary">主要</Button>
+            <Button variant="outline" intent="secondary">次要</Button>
+            <Button variant="outline" intent="success">成功</Button>
+            <Button variant="outline" intent="warning">警告</Button>
+            <Button variant="outline" intent="danger">危险</Button>
+            <Button variant="outline" intent="neutral">中性</Button>
           </div>
         </div>
       </div>
@@ -73,33 +73,33 @@
       <!-- 状态演示 -->
       <div class="mb-8">
         <h4 class="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">
-          {{ $t('demo.buttons.states.title') }}
+          状态
         </h4>
         <div class="flex flex-wrap items-center gap-4">
-          <Button>{{ $t('demo.buttons.states.normal') }}</Button>
-          <Button disabled>{{ $t('demo.buttons.states.disabled') }}</Button>
-          <Button loading>{{ $t('demo.buttons.states.loading') }}</Button>
-          <Button full-width>{{ $t('demo.buttons.states.fullWidth') }}</Button>
+          <Button>正常</Button>
+          <Button disabled>禁用</Button>
+          <Button loading>加载中</Button>
+          <Button full-width>全宽按钮</Button>
         </div>
       </div>
 
       <!-- 组合演示 -->
       <div class="mb-8">
         <h4 class="text-lg font-medium mb-4 text-gray-800 dark:text-gray-200">
-          {{ $t('demo.buttons.combinations.title') }}
+          组合示例
         </h4>
         <div class="flex flex-wrap items-center gap-4">
           <Button size="lg" variant="solid" intent="primary">
-            {{ $t('demo.buttons.combinations.lgPrimary') }}
+            大号主要按钮
           </Button>
           <Button size="sm" variant="outline" intent="success">
-            {{ $t('demo.buttons.combinations.smSuccess') }}
+            小号成功按钮
           </Button>
           <Button variant="soft" intent="warning" loading>
-            {{ $t('demo.buttons.combinations.loadingWarning') }}
+            加载中警告按钮
           </Button>
           <Button variant="ghost" intent="danger" disabled>
-            {{ $t('demo.buttons.combinations.disabledDanger') }}
+            禁用危险按钮
           </Button>
         </div>
       </div>
@@ -108,28 +108,28 @@
     <!-- 主题切换演示 -->
     <section>
       <h3 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-        {{ $t('demo.theme.title') }}
+        主题切换演示
       </h3>
       <ClientOnly>
         <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 space-y-4">
           <p class="text-gray-700 dark:text-gray-300">
-            {{ $t('demo.theme.currentMode') }}: <strong>{{ mode === "dark" ? $t('demo.theme.dark') : $t('demo.theme.light') }}</strong>
+            当前主题模式: <strong>{{ mode === "dark" ? '深色' : '浅色' }}</strong>
           </p>
           <p class="text-gray-700 dark:text-gray-300">
-            {{ $t('demo.theme.colorScheme') }}: <strong>{{ colorScheme }}</strong>
+            当前配色方案: <strong>{{ colorScheme }}</strong>
           </p>
           <p class="text-gray-700 dark:text-gray-300">
-            {{ $t('demo.theme.isDark') }}: <strong>{{ isDark ? $t('demo.theme.yes') : $t('demo.theme.no') }}</strong>
+            是否深色模式: <strong>{{ isDark ? '是' : '否' }}</strong>
           </p>
           <div class="flex gap-4">
             <Button @click="toggleTheme">
-              {{ isDark ? $t('demo.theme.switchToLight') : $t('demo.theme.switchToDark') }}
+              {{ isDark ? '切换到浅色' : '切换到深色' }}
             </Button>
           </div>
         </div>
         <template #fallback>
           <div class="bg-gray-100 dark:bg-gray-800 rounded-lg p-6 space-y-4">
-            <p class="text-gray-700 dark:text-gray-300">{{ $t('demo.loading') }}</p>
+            <p class="text-gray-700 dark:text-gray-300">加载中...</p>
           </div>
         </template>
       </ClientOnly>
@@ -138,7 +138,7 @@
     <!-- 颜色方案演示 -->
     <section>
       <h3 class="text-2xl font-semibold mb-6 text-gray-900 dark:text-white">
-        {{ $t('demo.colorSchemes.title') }}
+        配色方案演示
       </h3>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <div
@@ -152,10 +152,10 @@
           ]"
         >
           <h4 class="text-lg font-semibold mb-2 text-gray-900 dark:text-white">
-            {{ $t(schemeLabels[scheme.value].label) }}
+            {{ schemeLabels[scheme.value].label }}
           </h4>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
-            {{ $t(schemeLabels[scheme.value].description) }}
+            {{ schemeLabels[scheme.value].description }}
           </p>
           <Button
             :intent="scheme.value === colorScheme ? 'primary' : 'neutral'"
@@ -163,7 +163,7 @@
             size="sm"
             @click="setColorScheme(scheme.value)"
           >
-            {{ scheme.value === colorScheme ? $t('demo.colorSchemes.current') : $t('demo.colorSchemes.switchTo') }}
+            {{ scheme.value === colorScheme ? '当前方案' : '切换到此方案' }}
           </Button>
         </div>
       </div>
@@ -172,10 +172,6 @@
 </template>
 
 <script setup lang="ts">
-import { useTheme } from "~/composables/useTheme";
-import { useI18n } from '#imports';
-
-const { t } = useI18n();
 const { mode, colorScheme, isDark, toggleTheme, setColorScheme } = useTheme();
 
 // 颜色方案配置
@@ -190,24 +186,24 @@ const schemes = [
 // 颜色方案标签
 const schemeLabels = {
   blue: {
-    label: "demo.colorSchemes.blue.label",
-    description: "demo.colorSchemes.blue.description",
+    label: "蓝色方案",
+    description: "经典蓝色，适合大多数应用场景。",
   },
   green: {
-    label: "demo.colorSchemes.green.label",
-    description: "demo.colorSchemes.green.description",
+    label: "绿色方案",
+    description: "清新绿色，适合自然和环保类应用。",
   },
   purple: {
-    label: "demo.colorSchemes.purple.label",
-    description: "demo.colorSchemes.purple.description",
+    label: "紫色方案",
+    description: "优雅紫色，适合创意和艺术类应用。",
   },
   red: {
-    label: "demo.colorSchemes.red.label",
-    description: "demo.colorSchemes.red.description",
+    label: "红色方案",
+    description: "热情红色，适合活力和运动类应用。",
   },
   orange: {
-    label: "demo.colorSchemes.orange.label",
-    description: "demo.colorSchemes.orange.description",
+    label: "橙色方案",
+    description: "温暖橙色，适合温馨和亲和类应用。",
   },
 };
 </script>

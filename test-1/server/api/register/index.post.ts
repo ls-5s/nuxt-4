@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
         username: newUser.username,
       },
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       code: error.statusCode || 500,
       message: error.statusMessage || "注册失败",

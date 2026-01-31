@@ -7,7 +7,7 @@ export default defineNuxtPlugin({
     // @pinia/nuxt 已经创建了 pinia 实例
     // 使用 createPersistedState 创建插件实例
     if (nuxtApp.$pinia) {
-      nuxtApp.$pinia.use(createPersistedState());
+      (nuxtApp.$pinia as any).use(createPersistedState());
     }
   },
 });

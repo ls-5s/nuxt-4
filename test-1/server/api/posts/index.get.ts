@@ -2,7 +2,7 @@ import { db } from "../../db/connection";
 import { postsTable, usersTable } from "../../db/schema";
 import { eq, desc } from "drizzle-orm";
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async () => {
   try {
     // 多表查询：获取帖子同时获取作者信息
     const posts = await db

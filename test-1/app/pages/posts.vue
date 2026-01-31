@@ -12,18 +12,18 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">标题</label>
-            <input 
-              v-model="form.title" 
-              type="text" 
-              placeholder="请输入标题" 
+            <input
+              v-model="form.title"
+              type="text"
+              placeholder="请输入标题"
               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
             />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">内容</label>
-            <textarea 
-              v-model="form.content" 
-              placeholder="请输入内容" 
+            <textarea
+              v-model="form.content"
+              placeholder="请输入内容"
               rows="3"
               class="w-full p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
             ></textarea>
@@ -31,14 +31,14 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">用户ID (模拟当前登录用户)</label>
             <div class="flex gap-2">
-              <input 
-                v-model="form.userId" 
-                type="number" 
-                placeholder="输入已注册的用户ID" 
+              <input
+                v-model="form.userId"
+                type="number"
+                placeholder="输入已注册的用户ID"
                 class="flex-1 p-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
-              <button 
-                @click="createPost" 
+              <button
+                @click="createPost"
                 :disabled="isSubmitting"
                 class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition disabled:opacity-50"
               >
@@ -53,9 +53,9 @@
       <!-- 帖子列表 -->
       <div class="space-y-4">
         <h2 class="text-xl font-semibold text-gray-700 mb-2">最新帖子</h2>
-        
+
         <div v-if="pending" class="text-center py-8 text-gray-500">加载中...</div>
-        
+
         <div v-else-if="!posts.length" class="text-center py-8 bg-white rounded shadow text-gray-500">
           暂无帖子，快来抢沙发吧！
         </div>
@@ -93,7 +93,7 @@ const isSubmitting = ref(false)
 
 // 获取帖子列表
 const { data: res, refresh, pending } = await useFetch('/api/posts')
-const posts = computed(() => res.value?.data || [])
+const posts = computed(() => (res.value as any)?.data || [])
 
 // 格式化日期
 function formatDate(dateStr: string | Date | null) {
@@ -107,10 +107,10 @@ async function createPost() {
     alert('请填写完整信息')
     return
   }
-  
+
   isSubmitting.value = true
   try {
-    const { data, error } = await useFetch('/api/posts', {
+    const { error } = await useFetch('/api/posts', {
       method: 'POST',
       body: {
         title: form.title,
