@@ -25,3 +25,8 @@ logs
 
 # TypeScript
 *.tsbuildinfo
+
+# Database
+*.db
+*.sqlite
+server/db/sqlite.db

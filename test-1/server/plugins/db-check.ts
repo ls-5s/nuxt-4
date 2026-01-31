@@ -5,7 +5,7 @@
  * 适配：@libsql/client（最新版 API）
  */
 import { consola } from "consola";
-import { libsqlClient, dbPath } from "../db/connection";
+import { libsqlClient, dbPath } from "../db";
 
 export default async () => {
   consola.info("🔄 正在校验数据库连接...");

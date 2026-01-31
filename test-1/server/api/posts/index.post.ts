@@ -1,4 +1,4 @@
-import { db } from "../../db/connection";
+import { db } from "../../db";
 import { postsTable } from "../../db/schema";
 
 export default defineEventHandler(async (event) => {
@@ -13,11 +13,15 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const newPost = await db.insert(postsTable).values({
-      title,
-      content,
-      userId,
-    }).returning().get();
+    const newPost = await db
+      .insert(postsTable)
+      .values({
+        title,
+        content,
+        userId,
+      })
+      .returning()
+      .get();
 
     return {
       code: 200,

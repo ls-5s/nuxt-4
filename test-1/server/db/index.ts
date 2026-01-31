@@ -4,7 +4,7 @@ import path from "path";
 import * as schema from "./schema";
 
 const dbDir = path.resolve(process.cwd(), "server/db");
-const dbPath = path.resolve(dbDir, "sqlite.db");
+export const dbPath = path.resolve(dbDir, "sqlite.db");
 
 export const libsqlClient = createClient({
   url: `file:${dbPath}`,
@@ -15,4 +15,4 @@ export const db = drizzle(libsqlClient, {
   logger: process.env.NODE_ENV === "development",
 });
 
-export { dbPath };
+export * from "./schema";

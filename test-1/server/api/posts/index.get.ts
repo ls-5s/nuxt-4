@@ -1,4 +1,4 @@
-import { db } from "../../db/connection";
+import { db } from "../../db";
 import { postsTable, usersTable } from "../../db/schema";
 import { eq, desc } from "drizzle-orm";
 

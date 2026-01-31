@@ -1,4 +1,4 @@
-import { db } from "../../db/connection";
+import { db } from "../../db";
 import { usersTable } from "../../db/schema";
 import { eq } from "drizzle-orm";
 
@@ -14,7 +14,11 @@ export default defineEventHandler(async (event) => {
     }
 
     // 检查用户是否已存在
-    const existingUser = await db.select().from(usersTable).where(eq(usersTable.username, username)).get();
+    const existingUser = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.username, username))
+      .get();
     if (existingUser) {
       throw createError({
         statusCode: 409,
@@ -23,10 +27,14 @@ export default defineEventHandler(async (event) => {
     }
 
     // 创建新用户 (注意：实际生产环境密码必须加密！)
-    const newUser = await db.insert(usersTable).values({
-      username,
-      password,
-    }).returning().get();
+    const newUser = await db
+      .insert(usersTable)
+      .values({
+        username,
+        password,
+      })
+      .returning()
+      .get();
 
     return {
       code: 200,
