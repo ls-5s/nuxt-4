@@ -168,3 +168,77 @@ export default function PackingList() {
 ```
 - 选择性地返回 null 
 在一些情况下，你不想有任何东西进行渲染。比如，你不想显示已经打包好的物品。但一个组件必须返回一些东西。这种情况下，你可以直接返回 null。
+## 渲染列表
+```ts
+// 1. 定义 Person 接口，明确数组项的类型结构
+interface Person {
+  id: number;
+  name: string;
+  profession: string;
+  // 补充 accomplishment 字段（原代码用到但未定义）
+  accomplishment?: string;
+}
+
+// 2. 定义 people 数组并指定类型（TS 会自动推导，但显式注解更清晰）
+const people: Person[] = [{
+  id: 0,
+  name: '凯瑟琳·约翰逊',
+  profession: '数学家',
+  accomplishment: '计算航天轨道'
+}, {
+  id: 1,
+  name: '马里奥·莫利纳',
+  profession: '化学家',
+  accomplishment: '发现臭氧层空洞成因'
+}, {
+  id: 2,
+  name: '穆罕默德·阿卜杜勒·萨拉姆',
+  profession: '物理学家',
+  accomplishment: '弱电统一理论'
+}, {
+  id: 3,
+  name: '珀西·莱温·朱利亚',
+  profession: '化学家',
+  accomplishment: '有机合成化学贡献'
+}, {
+  id: 4,
+  name: '苏布拉马尼扬·钱德拉塞卡',
+  profession: '天体物理学家',
+  accomplishment: '钱德拉塞卡极限'
+}];
+
+// 3. 定义 getImageUrl 函数的类型（原代码用到但未实现）
+const getImageUrl = (person: Person): string => {
+  // 模拟图片 URL 生成逻辑（可根据实际需求修改）
+  return `./images/${person.id}.jpg`;
+};
+
+// 4. 过滤出所有化学家（TS 会自动推导 chemists 类型为 Person[]）
+const chemists: Person[] = people.filter((person: Person) => 
+  person.profession === '化学家'
+);
+
+// 5. 生成列表项（假设是 React 组件场景，补充 React 类型）
+// 若不是 React 场景，可将 JSX 改为普通字符串拼接
+import React from 'react'; // React 项目需引入
+const listItems = chemists.map((person: Person) => (
+  <li key={person.id}> {/* React 列表需加 key 属性 */}
+    <img
+      src={getImageUrl(person)}
+      alt={person.name}
+    />
+    <p>
+      <b>{person.name}:</b>
+      {' ' + person.profession + ' '}
+      因{person.accomplishment || '突出贡献'}而闻名世界
+    </p>
+  </li>
+));
+
+// 6. 返回列表（React 组件中使用）
+const ChemistList = () => {
+  return <ul>{listItems}</ul>;
+};
+
+export default ChemistList;
+```
