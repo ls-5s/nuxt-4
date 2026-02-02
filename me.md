@@ -10,7 +10,11 @@ api axios
 pnpm run db:studio
 pnpm run db:migrate
 pnpm run db:generate
-
+pnpm run db:db:import 
+pnpm run db:seed ：填充测试数据
+pnpm run db:backup ：立即备份
+pnpm run db:restore ：恢复数据
+pnpm run db:backup:schedule ：启动自动备份服务
 =====================================
 
 📌 分开安装（按需选择，适合分步操作）
@@ -21,7 +25,7 @@ pnpm add drizzle-orm @libsql/client
 ```
 drizzle-orm：Drizzle 核心 ORM 库，提供所有查询 / 操作符 / 表定义能力
 @libsql/client：SQLite 官方驱动，实现数据库连接通信
-2. 安装开发工具依赖（仅开发环境用，上线不打包）
+1. 安装开发工具依赖（仅开发环境用，上线不打包）
 ```bash
 运行
 pnpm add -D drizzle-kit

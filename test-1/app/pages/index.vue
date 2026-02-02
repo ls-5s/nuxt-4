@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import type { LoginResponse, UserInfo } from '@/types/index'
+import type { LoginResponse, UserInfo } from '~/types/index'
 
 const goToDemo = () => {
     navigateTo('/demo')

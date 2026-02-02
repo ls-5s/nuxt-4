@@ -1,0 +1,46 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "password123",
+      "role": "admin"
+    },
+    {
+      "username": "jinhsi_official",
+      "password": "jinhsi_password",
+      "role": "editor"
+    },
+    {
+      "username": "shop_manager",
+      "password": "shop_password",
+      "role": "user"
+    }
+  ],
+  "posts": [
+    {
+      "title": "Nuxt 4.0 正式发布：更快、更强、更灵活",
+      "content": "Nuxt 4 带来了全新的目录结构、更快的构建速度以及对 Vue 3.4+ 的完美支持。新的自动导入机制让开发体验更上一层楼。",
+      "author": "admin"
+    },
+    {
+      "title": "今汐 (Jinhsi) 角色技能详解",
+      "content": "今汐作为《鸣潮》中的强力光属性角色，其共鸣回路「万物感应」能提供强大的爆发输出。核心技能包括普攻「凌光剑法」和共鸣技能「流光夕照」。",
+      "author": "jinhsi_official"
+    },
+    {
+      "title": "2024 夏季新品发布会邀请函",
+      "content": "诚邀您参加我们的夏季新品发布会！全场商品 5 折起，更有机会赢取 iPhone 15 Pro Max。时间：6月18日。",
+      "author": "shop_manager"
+    },
+    {
+      "title": "Drizzle ORM：TypeScript 时代的数据库利器",
+      "content": "Drizzle ORM 以其轻量级、类型安全和零运行时开销著称。配合 SQLite，它能为全栈应用提供极致的开发体验。",
+      "author": "admin"
+    },
+    {
+      "title": "【公告】服务器维护通知",
+      "content": "为了提供更好的服务，我们将于本周六凌晨 2:00 进行服务器停机维护，预计持续 2 小时。给您带来的不便敬请谅解。",
+      "author": "admin"
+    }
+  ]
+}

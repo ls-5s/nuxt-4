@@ -984,3 +984,159 @@ export async function classicEcommerceInsert() {
 //   console.error('=== 经典插入失败 ===', err.message);
 // });
 ```
+## 删除
+```ts
+import { drizzle } from 'drizzle-orm/better-sqlite3';
+import { 
+  delete as drizzleDelete, eq, inArray, and, gt 
+} from 'drizzle-orm';
+import Database from 'better-sqlite3';
+import { 
+  integer, text, sqliteTable, foreignKey 
+} from 'drizzle-orm/sqlite-core';
+
+// ====================== 1. 定义关联表结构 ======================
+// 主表：用户表
+const users = sqliteTable('users', {
+  id: integer('id').primaryKey({ autoIncrement: true }), // 自增ID
+  name: text('name').notNull(), // 用户名
+  age: integer('age').notNull(), // 年龄
+  status: text('status', { enum: ['active', 'inactive'] }).default('active'), // 状态
+});
+
+// 子表：帖子表（关联用户表，一对多）
+const posts = sqliteTable('posts', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  title: text('title').notNull(), // 帖子标题
+  content: text('content'), // 帖子内容
+  userId: integer('user_id'), // 关联用户ID
+}, (table) => ({
+  // 定义外键关联（仅约束，不设置级联删除，避免误删）
+  fkPostToUser: foreignKey({
+    columns: [table.userId],
+    foreignColumns: [users.id],
+    name: 'fk_post_user',
+  }),
+}));
+
+// ====================== 2. 初始化SQLite连接 ======================
+// 连接本地SQLite数据库（不存在则自动创建）
+const sqliteDb = new Database('test-db.sqlite');
+// 开启外键约束（关键！否则外键关联失效）
+sqliteDb.pragma('foreign_keys = ON');
+// 创建Drizzle ORM实例
+const db = drizzle(sqliteDb);
+
+// ====================== 3. 核心业务函数 ======================
+/**
+ * 初始化测试数据（先清空旧数据，再插入测试用户和帖子）
+ */
+async function initTestData() {
+  // 先清空旧数据（先删子表，再删主表）
+  await db.delete(posts);
+  await db.delete(users);
+
+  // 插入2个测试用户
+  const insertedUsers = await db.insert(users).values([
+    { name: '张三', age: 28, status: 'active' }, // id: 1
+    { name: '李四', age: 17, status: 'inactive' }, // id: 2
+  ]).returning();
+  console.log('初始化用户：', insertedUsers);
+
+  // 插入测试帖子（关联上述用户）
+  const insertedPosts = await db.insert(posts).values([
+    { title: '张三的第一篇帖子', content: 'Hello Drizzle', userId: 1 }, // 关联张三
+    { title: '张三的第二篇帖子', content: 'SQLite关联删除', userId: 1 }, // 关联张三
+    { title: '李四的帖子', content: '新手教程', userId: 2 }, // 关联李四
+  ]).returning();
+  console.log('初始化帖子：', insertedPosts);
+}
+
+/**
+ * 场景1：删除指定用户 + 同步删除其所有帖子（最常用）
+ * @param userId 要删除的用户ID
+ */
+async function deleteUserAndRelatedPosts(userId: number) {
+  try {
+    // 事务包裹：保证要么都删成功，要么都失败
+    await db.transaction(async (tx) => {
+      // 第一步：删除该用户的所有帖子（子表）
+      const deletedPosts = await tx.delete(posts)
+        .where(eq(posts.userId, userId))
+        .returning();
+      console.log(`删除用户${userId}的帖子：`, deletedPosts);
+
+      // 第二步：删除该用户（主表）
+      const deletedUser = await tx.delete(users)
+        .where(eq(users.id, userId))
+        .returning();
+      console.log(`删除的用户：`, deletedUser);
+    });
+    console.log(`✅ 用户${userId}及其关联帖子删除成功`);
+  } catch (error) {
+    console.error(`❌ 删除失败：`, error);
+  }
+}
+
+/**
+ * 场景2：按用户条件批量删除帖子（只删子表，不删主表）
+ * 示例：删除「年龄<18岁 且 状态为inactive」的用户的所有帖子
+ */
+async function deletePostsByUserCondition() {
+  try {
+    // 子查询：先筛选出符合条件的用户ID
+    const targetUserIds = db.select({ id: users.id })
+      .from(users)
+      .where(and(
+        eq(users.status, 'inactive'), // 状态为inactive
+        gt(users.age, 0), // 年龄>0（兜底）
+        users.age.lt(18) // 年龄<18
+      ));
+
+    // 删除这些用户的所有帖子
+    const deletedPosts = await db.delete(posts)
+      .where(inArray(posts.userId, targetUserIds))
+      .returning();
+
+    if (deletedPosts.length === 0) {
+      console.log('📌 无符合条件的帖子需要删除');
+      return;
+    }
+    console.log(`✅ 按条件删除的帖子：`, deletedPosts);
+  } catch (error) {
+    console.error(`❌ 按条件删帖失败：`, error);
+  }
+}
+
+// ====================== 4. 执行Demo ======================
+async function runDemo() {
+  console.log('===== 初始化测试数据 =====');
+  await initTestData();
+
+  console.log('\n===== 场景1：删除用户1及关联帖子 =====');
+  await deleteUserAndRelatedPosts(1);
+
+  console.log('\n===== 场景2：按条件删除帖子 =====');
+  await deletePostsByUserCondition();
+
+  // 关闭数据库连接
+  sqliteDb.close();
+  console.log('\n===== Demo执行完成 =====');
+}
+
+// 启动Demo
+runDemo();
+```
+## 跟新
+```ts
+// 更新单个字段：把用户2的年龄改成18
+async function updateSingleField() {
+  const result = await db.update(users)
+    .set({ age: 18 }) // 核心：指定要改的字段（age）和新值（18）
+    .where(eq(users.id, 2)) // 限定只改ID=2的用户
+    .returning();
+
+  console.log('更新后的用户：', result);
+  // 输出：[{ id: 2, name: '李四', age: 18, status: 'inactive' }]
+}
+```

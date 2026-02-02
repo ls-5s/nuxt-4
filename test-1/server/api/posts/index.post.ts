@@ -1,4 +1,4 @@
-import { db } from "../../db/connection";
+import { db } from "../../db";
 import { postsTable } from "../../db/schema";
 
 export default defineEventHandler(async (event) => {
@@ -13,18 +13,22 @@ export default defineEventHandler(async (event) => {
       });
     }
 
-    const newPost = await db.insert(postsTable).values({
-      title,
-      content,
-      userId,
-    }).returning().get();
+    const newPost = await db
+      .insert(postsTable)
+      .values({
+        title,
+        content,
+        userId,
+      })
+      .returning()
+      .get();
 
     return {
       code: 200,
       message: "发布成功",
       data: newPost,
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       code: error.statusCode || 500,
       message: error.statusMessage || "发布失败",
