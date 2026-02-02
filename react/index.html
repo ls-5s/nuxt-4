@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>祈愿系统 - Excel增强版</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        /* --- 全局样式 & 变量 --- */
+        :root {
+            --theme-color: #ffd700;
+            /* 默认金色，会动态改变 */
+            --bg-gradient: radial-gradient(circle, #4a3e28 0%, #1a1c24 80%);
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #1a1c24;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* --- 1. 输入界面 --- */
+        #input-screen {
+            background: rgba(0, 0, 0, 0.75);
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #4a4e5e;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            z-index: 10;
+            transition: opacity 0.5s;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            color: #d4c5a3;
+            letter-spacing: 2px;
+        }
+
+        /* Excel 上传按钮美化 */
+        .file-upload-wrapper {
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-file {
+            border: 2px solid #6b7085;
+            color: #ddd;
+            background-color: transparent;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-file:hover {
+            border-color: #dabe86;
+            color: #dabe86;
+        }
+
+        input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #6b7085;
+            color: #fff;
+            padding: 10px;
+            border-radius: 5px;
+            resize: none;
+            font-size: 14px;
+            margin-bottom: 20px;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .btn-wish {
+            background: linear-gradient(to right, #dabe86, #f3e6c3);
+            border: none;
+            padding: 12px 50px;
+            font-size: 18px;
+            color: #584b31;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(218, 190, 134, 0.4);
+            transition: transform 0.1s, filter 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            gap: 10px;
+        }
+
+        .btn-wish:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+
+        .btn-wish:active {
+            transform: scale(0.95);
+        }
+
+        .primogem-icon {
+            width: 24px;
+            height: 24px;
+            background: conic-gradient(from 45deg, #a7d8e6, #c597d8, #a7d8e6);
+            clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+        }
+
+        /* --- 2. 动画容器 --- */
+        #animation-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            overflow: hidden;
+            z-index: 20;
+        }
+
+        /* 流星 - 使用变量控制颜色 */
+        .meteor {
+            position: absolute;
+            width: 100px;
+            height: 4px;
+            /* 动态渐变颜色 */
+            background: linear-gradient(90deg, transparent, #fff, var(--theme-color));
+            border-radius: 50%;
+            top: -100px;
+            right: -100px;
+            transform: rotate(-45deg);
+            box-shadow: 0 0 20px var(--theme-color);
+            display: none;
+        }
+
+        @keyframes shoot {
+            0% {
+                top: -10%;
+                right: -10%;
+                width: 100px;
+                opacity: 1;
+            }
+
+            60% {
+                top: 50%;
+                right: 50%;
+                width: 300px;
+                opacity: 1;
+            }
+
+            100% {
+                top: 52%;
+                right: 52%;
+                width: 50px;
+                opacity: 0;
+            }
+        }
+
+        #flash {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* --- 3. 结果展示 --- */
+        #result-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            /* 背景动态变化 */
+            background: var(--bg-gradient);
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        .card {
+            width: 0px;
+            height: 600px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.5));
+            border: 2px solid var(--theme-color);
+            box-shadow: 0 0 50px var(--theme-color);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            transform: scale(0.8);
+            opacity: 0;
+            overflow: hidden;
+        }
+
+        .winner-name {
+            font-size: 60px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 0 20px var(--theme-color);
+            z-index: 2;
+            opacity: 0;
+            transform: translateY(20px);
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .stars {
+            color: var(--theme-color);
+            font-size: 30px;
+            margin-bottom: 20px;
+            letter-spacing: 5px;
+            opacity: 0;
+        }
+
+        .silhouette {
+            font-size: 150px;
+            position: absolute;
+            color: rgba(0, 0, 0, 0.3);
+            z-index: 1;
+        }
+
+        .rays {
+            position: absolute;
+            width: 1000px;
+            height: 1000px;
+            /* 动态光芒颜色 */
+            background: repeating-conic-gradient(var(--theme-color) 0% 5%, transparent 5% 10%);
+            opacity: 0.1;
+            animation: rotate 20s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes cardReveal {
+            0% {
+                width: 5px;
+                opacity: 0;
+                transform: scale(3);
+                filter: brightness(10);
+            }
+
+            50% {
+                width: 5px;
+                opacity: 1;
+                transform: scale(1);
+                filter: brightness(2);
+            }
+
+            100% {
+                width: 350px;
+                filter: brightness(1);
+            }
+        }
+
+        @keyframes textFadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .btn-reset {
+            margin-top: 30px;
+            padding: 10px 30px;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: #ddd;
+            border-radius: 30px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="input-screen">
+        <h1>人员名单</h1>
+
+        <div class="file-upload-wrapper">
+            <button class="btn-file">📂 导入 Excel 文件</button>
+            <input type="file" id="excel-file" accept=".xlsx, .xls" onchange="importExcel(this)">
+        </div>
+
+        <textarea id="names" placeholder="或者在此手动输入&#10;每行一个名字"></textarea>
+
+        <button class="btn-wish" onclick="startWish()">
+            <div class="primogem-icon"></div>
+            祈愿 x1
+        </button>
+        <p style="font-size: 12px; color: #888; margin-top:10px;">Excel 格式：第一列为名字列表</p>
+    </div>
+
+    <div id="animation-container">
+        <div class="meteor" id="meteor"></div>
+        <div id="flash"></div>
+    </div>
+
+    <div id="result-screen">
+        <div class="rays"></div>
+        <div class="card" id="result-card">
+            <div class="silhouette">?</div>
+            <div class="stars" id="star-display">★★★★★</div>
+            <div class="winner-name" id="winner-text"></div>
+        </div>
+        <button class="btn-reset" onclick="resetSystem()">再次祈愿</button>
+    </div>
+
+    <script>
+        // 定义不同稀有度的颜色和配置
+        // 3星: 蓝色, 4星: 紫色, 5星: 金色
+        const rarityConfig = {
+            3: { color: '#38b6ff', stars: '★★★', bg: 'radial-gradient(circle, #1a2a38 0%, #1a1c24 80%)' },
+            4: { color: '#d068ff', stars: '★★★★', bg: 'radial-gradient(circle, #2d1a38 0%, #1a1c24 80%)' },
+            5: { color: '#ffd700', stars: '★★★★★', bg: 'radial-gradient(circle, #4a3e28 0%, #1a1c24 80%)' }
+        };
+
+        // 处理 Excel 导入
+        function importExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+
+                // 读取第一个工作表
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+
+                // 转换为 JSON (数组)
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+                // 提取第一列数据 (过滤空值)
+                let nameList = [];
+                json.forEach(row => {
+                    if (row[0]) nameList.push(row[0]);
+                });
+
+                if (nameList.length > 0) {
+                    document.getElementById('names').value = nameList.join('\n');
+                    alert(`成功导入 ${nameList.length} 个名字！`);
+                } else {
+                    alert('Excel 中没有找到有效数据，请检查第一列。');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 获取随机稀有度 (模拟抽卡概率)
+        function getRandomRarity() {
+            const rand = Math.random() * 100;
+            if (rand < 5) return 5;   // 5% 概率金光
+            if (rand < 25) return 4;  // 20% 概率紫光
+            return 3;                 // 75% 概率蓝光
+        }
+
+        function startWish() {
+            const input = document.getElementById('names').value;
+            const nameList = input.split('\n').filter(n => n.trim() !== '');
+
+            if (nameList.length === 0) {
+                alert('名单为空！请先输入名字或导入 Excel。');
+                return;
+            }
+
+            // 1. 抽人逻辑
+            const winner = nameList[Math.floor(Math.random() * nameList.length)];
+
+            // 2. 决定稀有度颜色
+            const rarityLevel = getRandomRarity();
+            const config = rarityConfig[rarityLevel];
+
+            // 3. 应用颜色变量
+            document.documentElement.style.setProperty('--theme-color', config.color);
+            document.documentElement.style.setProperty('--bg-gradient', config.bg);
+
+            // 更新文本内容
+            document.getElementById('winner-text').innerText = winner;
+            document.getElementById('star-display').innerText = config.stars;
+
+            // 4. 开始动画流程
+            const inputScreen = document.getElementById('input-screen');
+            const animContainer = document.getElementById('animation-container');
+            const meteor = document.getElementById('meteor');
+            const flash = document.getElementById('flash');
+            const resultScreen = document.getElementById('result-screen');
+            const resultCard = document.getElementById('result-card');
+            const winnerText = document.getElementById('winner-text');
+            const stars = document.getElementById('star-display');
+
+            // 隐藏 UI
+            inputScreen.style.opacity = 0;
+            setTimeout(() => inputScreen.style.display = 'none', 500);
+
+            // 显示动画层
+            animContainer.style.opacity = 1;
+            animContainer.style.zIndex = 20;
+
+            // --- 阶段一：流星划过 ---
+            meteor.style.display = 'block';
+            // 重置动画
+            meteor.style.animation = 'none';
+            meteor.offsetHeight; /* trigger reflow */
+            meteor.style.animation = 'shoot 1.2s ease-in forwards';
+
+            // --- 阶段二：撞击白屏 ---
+            setTimeout(() => {
+                flash.style.opacity = 1;
+                flash.style.transition = 'opacity 0.1s';
+            }, 1100);
+
+            // --- 阶段三：结果展示 ---
+            setTimeout(() => {
+                meteor.style.display = 'none';
+
+                flash.style.opacity = 0;
+                flash.style.transition = 'opacity 1s';
+
+                animContainer.style.zIndex = -1;
+                resultScreen.style.display = 'flex';
+
+                requestAnimationFrame(() => {
+                    resultScreen.style.opacity = 1;
+
+                    // 卡片动画
+                    resultCard.style.opacity = 1;
+                    resultCard.style.animation = 'none';
+                    resultCard.offsetHeight;
+                    resultCard.style.animation = 'cardReveal 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards';
+
+                    // 文字显现
+                    winnerText.style.opacity = 0;
+                    stars.style.opacity = 0;
+
+                    setTimeout(() => {
+                        winnerText.style.animation = 'textFadeIn 0.5s ease-out forwards';
+                        stars.style.animation = 'textFadeIn 0.5s ease-out 0.2s forwards';
+                    }, 600);
+                });
+
+            }, 1300);
+        }
+
+        function resetSystem() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('result-screen').style.opacity = 0;
+
+            document.getElementById('input-screen').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('input-screen').style.opacity = 1;
+            }, 10);
+
+            document.getElementById('animation-container').style.opacity = 0;
+
+            // 简单的防呆，重置卡片状态
+            const resultCard = document.getElementById('result-card');
+            resultCard.style.width = '0px';
+        }
+    </script>
+</body>
+
+</html>
