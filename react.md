@@ -244,3 +244,220 @@ export default ChemistList;
 ```
 # 添加交互
 ## 响应事件
+方法 1：箭头函数包裹（最常用，适合单个按钮）
+直接在 onClick 里用箭头函数调用事件处理函数，并传入参数，直观易懂。
+```jsx
+export default function Button() {
+  // 定义带参数的事件处理函数
+  function handleClick(message) {
+    alert(message);
+  }
+
+  return (
+    {/* 用箭头函数包裹，点击时才会调用 handleClick 并传参 */}
+    <button onClick={() => handleClick('你点击了我！这是带参的提示～')}>
+      点我
+    </button>
+  );
+}
+```
+如果需要传多个参数，同样用箭头函数传递即可：
+```jsx
+export default function Button() {
+  function handleClick(buttonId, buttonText) {
+    alert(`你点击了按钮【${buttonId}】：${buttonText}`);
+  }
+
+  return (
+    <button onClick={() => handleClick(1, "提交按钮")}>
+      点我
+    </button>
+  );
+}
+```
+```ts
+import React from 'react';
+
+// Props 接口保持不变（核心类型约束）
+interface ButtonProps {
+  onSmash: () => void;
+  leftIcon?: React.ReactNode;
+  content: React.ReactNode;
+  suffix?: React.ReactNode;
+}
+
+// 仅指定参数类型，去掉返回值注解（TS 自动推导返回值）
+const Button = ({
+  onSmash,
+  leftIcon,
+  content,
+  suffix,
+}: ButtonProps) => { // 删掉 : React.ReactElement
+  return (
+    <button
+      onClick={onSmash}
+      style={{
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '4px',
+        cursor: 'pointer',
+      }}
+    >
+      {leftIcon}
+      {content}
+      {suffix}
+    </button>
+  );
+};
+
+// 无参数 + 无返回值注解（TS 自动推导）
+const VIPTag = () => (
+  <span style={{
+    background: '#ff0000',
+    color: '#ffffff',
+    fontSize: '12px',
+    padding: '0 4px',
+    borderRadius: '2px',
+  }}>
+    VIP
+  </span>
+);
+
+// 根组件：无参数 + 无返回值注解
+const App = () => {
+  return (
+    <div style={{ padding: '20px' }}>
+      <Button
+        onSmash={() => alert('正在播放！')}
+        leftIcon={<span>🎬</span>}
+        content="播放电影"
+        suffix={<VIPTag />}
+      />
+
+      <Button
+        onSmash={() => alert('正在上传！')}
+        content="上传图片"
+      />
+    </div>
+  );
+};
+
+export default App;
+```
+阻止传播 
+事件处理函数接收一个 事件对象 作为唯一的参数。按照惯例，它通常被称为 e ，代表 “event”（事件）。你可以使用此对象来读取有关事件的信息。
+
+这个事件对象还允许你阻止传播。如果你想阻止一个事件到达父组件，你需要像下面 Button 组件那样调用 e.stopPropagation() ：
+阻止默认行为 
+某些浏览器事件具有与事件相关联的默认行为。例如，点击 <form> 表单内部的按钮会触发表单提交事件，默认情况下将重新加载整个页面：
+```ts
+export default function Signup() {
+  return (
+    <form onSubmit={e => {
+      e.preventDefault();
+      alert('提交表单！');
+    }}>
+      <input />
+      <button>发送</button>
+    </form>
+  );
+}
+```
+## State：组件的记忆
+和ref 使用是差不多的
+```ts
+import { useState } from 'react';
+import { sculptureList } from './data.js';
+
+export default function Gallery() {
+  const [index, setIndex] = useState(0);
+
+  function handleClick() {
+    setIndex(index + 1);
+  }
+
+  let sculpture = sculptureList[index];
+  return (
+    <>
+      <button onClick={handleClick}>
+        Next
+      </button>
+      <h2>
+        <i>{sculpture.name} </i> 
+        by {sculpture.artist}
+      </h2>
+      <h3>  
+        ({index + 1} of {sculptureList.length})
+      </h3>
+      <img 
+        src={sculpture.url} 
+        alt={sculpture.alt}
+      />
+      <p>
+        {sculpture.description}
+      </p>
+    </>
+  );
+}
+```
+## state 如同一张快照
+```ts
+// 从React库中导入useState钩子，用于管理组件状态
+import { useState } from 'react';
+
+// 定义并导出Counter组件（默认导出）
+export default function Counter() {
+  // 初始化状态：
+  // number → 当前渲染批次的state快照，初始值为0
+  // setNumber → 修改state的函数，调用后触发组件重渲染（但不会立即改变当前的number快照）
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      {/* 渲染当前的number快照值（页面显示的数字） */}
+      <h1>{number}</h1>
+      
+      {/* 按钮点击事件：尝试通过三次setNumber让number+3 */}
+      <button onClick={() => {
+        // 【核心：state是快照】
+        // 此时number是当前渲染的快照（初始值0），三次setNumber都基于这个旧快照计算
+        setNumber(number + 1); // 基于number=0 → 预约新值1（但当前number仍为0）
+        setNumber(number + 1); // 还是基于number=0 → 预约新值1（覆盖上一次的预约）
+        setNumber(number + 1); // 还是基于number=0 → 预约新值1（最终只生效这一次）
+        
+        // 执行完这三行，当前作用域的number依然是0（快照特性），组件重渲染后才会变成1
+      }}>+3</button>
+    </>
+  )
+}
+
+// 【补充说明】
+// 实际效果：点击按钮后，页面数字只会从0→1，而非预期的3
+// 解决方法（用prev拿最新值）：
+// <button onClick={() => {
+//   setNumber(prev => prev + 1); // prev=0 → 1
+//   setNumber(prev => prev + 1); // prev=1 → 2
+//   setNumber(prev => prev + 1); // prev=2 → 3
+// }}>+3</button>
+```
+## 把一系列 state 更新加入队列
+```ts
+import { useState } from 'react';
+
+export default function Counter() {
+  const [number, setNumber] = useState(0);
+
+  return (
+    <>
+      <h1>{number}</h1>
+      <button onClick={() => {
+        setNumber(n => n + 1);
+        setNumber(n => n + 1);
+        setNumber(n => n + 1);
+      }}>+3</button>
+    </>
+  )
+}
+```
+## 更新 state 中的对象
