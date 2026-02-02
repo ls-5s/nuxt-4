@@ -35,3 +35,14 @@ react/
 - **React 19** + **TypeScript**
 - **Vite 7** 构建
 - **ESLint** + **TypeScript ESLint**
+
+# 描述UI
+## 第一个组件
+```ts
+export default function Sum() {
+    return (
+        <h1>hello World</h1>
+    )
+}
+```
+## 组件的导入和导出
