@@ -461,3 +461,745 @@ export default function Counter() {
 }
 ```
 ## 更新 state 中的对象
+immer
+```ts
+import { useImmer } from 'use-immer';
+
+export default function Form() {
+  const [person, updatePerson] = useImmer({
+    name: 'Niki de Saint Phalle',
+    artwork: {
+      title: 'Blue Nana',
+      city: 'Hamburg',
+      image: 'https://i.imgur.com/Sd1AgUOm.jpg',
+    }
+  });
+
+  function handleNameChange(e) {
+    updatePerson(draft => {
+      draft.name = e.target.value;
+    });
+  }
+
+  function handleTitleChange(e) {
+    updatePerson(draft => {
+      draft.artwork.title = e.target.value;
+    });
+  }
+
+  function handleCityChange(e) {
+    updatePerson(draft => {
+      draft.artwork.city = e.target.value;
+    });
+  }
+
+  function handleImageChange(e) {
+    updatePerson(draft => {
+      draft.artwork.image = e.target.value;
+    });
+  }
+
+  return (
+    <>
+      <label>
+        Name:
+        <input
+          value={person.name}
+          onChange={handleNameChange}
+        />
+      </label>
+      <label>
+        Title:
+        <input
+          value={person.artwork.title}
+          onChange={handleTitleChange}
+        />
+      </label>
+      <label>
+        City:
+        <input
+          value={person.artwork.city}
+          onChange={handleCityChange}
+        />
+      </label>
+      <label>
+        Image:
+        <input
+          value={person.artwork.image}
+          onChange={handleImageChange}
+        />
+      </label>
+      <p>
+        <i>{person.artwork.title}</i>
+        {' by '}
+        {person.name}
+        <br />
+        (located in {person.artwork.city})
+      </p>
+      <img 
+        src={person.artwork.image} 
+        alt={person.artwork.title}
+      />
+    </>
+  );
+}
+```
+## 更新 state 中的数组
+```ts
+// array-demo.ts
+import { produce } from 'immer';
+import type { Todo, TodoState } from './types';
+
+// 初始化原始状态
+const originalState: TodoState = {
+  todos: [
+    { id: 1, content: '学习 Immer', completed: false },
+    { id: 2, content: '编写 TS 代码', completed: true },
+  ],
+  filter: 'all',
+};
+
+// ==============================================
+// 场景1：使用 Immer 操作数组（推荐写法）
+// ==============================================
+const newState = produce(originalState, (draft) => {
+  // 1. 新增数组元素（push/unshift 直接用）
+  draft.todos.push({ id: 3, content: '测试数组操作', completed: false });
+
+  // 2. 修改指定索引的对象属性（嵌套更新，无需展开）
+  draft.todos[0].completed = true;
+
+  // 3. 删除元素：根据索引删除（splice）
+  // draft.todos.splice(1, 1);
+
+  // 4. 条件删除：过滤未完成任务（直接赋值替换数组）
+  draft.todos = draft.todos.filter((item) => !item.completed);
+
+  // 5. 批量更新：遍历修改所有任务状态
+  draft.todos.forEach((item) => {
+    item.completed = false;
+  });
+
+  // 6. 清空数组
+  // draft.todos = [];
+});
+
+// ==============================================
+// 对比：原生不可变更新写法（嵌套越深越繁琐）
+// ==============================================
+const nativeNewState = {
+  ...originalState,
+  todos: originalState.todos.map((item) =>
+    item.id === 1 ? { ...item, completed: true } : item
+  ),
+};
+
+// 验证结果：原始状态不变，新状态已更新
+console.log('原始状态长度：', originalState.todos.length); // 2
+console.log('新状态长度：', newState.todos.length); // 3
+console.log('引用是否相同：', originalState === newState); // false
+```
+# 状态管理
+## 用 State 响应输入
+好的，我帮你把“声明式地考虑UI”这5个步骤拆开解释，并用一个完整的React样例来串联演示，让你看得更清楚。
+
+---
+
+- 核心思想
+“声明式地考虑UI”是React这类框架的核心思路：你不需要手动操作DOM去更新界面，只需要**描述UI在不同状态下应该是什么样子**，框架会自动帮你完成DOM的更新。
+
+---
+- 步骤1：定位组件中不同的视图状态
+**解释**：先梳理你的UI会呈现哪些不同的显示状态，也就是“不同场景下，用户看到的内容有什么不一样”。
+**样例**：
+假设我们做一个“点赞按钮”，它有2种核心状态：
+- 未点赞：显示 `👍 点赞`
+- 已点赞：显示 `❤️ 已点赞`
+
+---
+
+- 步骤2：确定是什么触发了这些状态的改变
+**解释**：找到导致状态切换的用户行为或外部事件，比如点击、输入、接口返回等。
+**样例**：
+对于点赞按钮，状态改变的唯一触发条件就是**用户点击按钮**这个动作。
+
+---
+
+- 步骤3：通过 `useState` 表示内存中的 state
+**解释**：用React的 `useState` Hook 把UI状态转化为可管理的变量，让状态和UI关联起来。
+**样例**：
+```jsx
+import { useState } from 'react';
+
+function LikeButton() {
+  // 定义状态变量 isLiked，初始值为 false（未点赞状态）
+  const [isLiked, setIsLiked] = useState(false);
+
+  // ...后续逻辑
+}
+```
+
+---
+
+- 步骤4：删除任何不必要的 state 变量
+**解释**：检查状态变量是否可以通过已有数据推导出来。如果一个状态可以由其他状态计算得到，就不需要单独存为 state，避免冗余。
+**样例**：
+- ❌ 冗余写法（不推荐）：同时存 `isLiked` 和 `likeText` 两个 state
+  ```jsx
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeText, setLikeText] = useState('👍 点赞');
+  ```
+- ✅ 优化写法（推荐）：删除 `likeText`，用 `isLiked` 直接推导文字
+  ```jsx
+  const buttonText = isLiked ? '❤️ 已点赞' : '👍 点赞';
+  ```
+
+---
+
+- 步骤5：连接事件处理函数以设置 state
+**解释**：给触发状态变化的事件绑定处理函数，在函数里调用 `setState` 更新状态，让UI自动重新渲染。
+**样例**：
+```jsx
+import { useState } from 'react';
+
+function LikeButton() {
+  const [isLiked, setIsLiked] = useState(false);
+
+  // 点击按钮时触发的处理函数
+  const handleClick = () => {
+    // 切换 isLiked 的状态
+    setIsLiked(!isLiked);
+  };
+
+  // 用 isLiked 推导按钮文字
+  const buttonText = isLiked ? '❤️ 已点赞' : '👍 点赞';
+
+  // 声明式渲染：UI 会根据 isLiked 的值自动显示对应内容
+  return <button onClick={handleClick}>{buttonText}</button>;
+}
+```
+
+---
+
+- 完整运行效果
+当用户点击按钮时：
+1. `handleClick` 触发，调用 `setIsLiked(!isLiked)` 切换状态
+2. `isLiked` 从 `false` 变成 `true`（或反之）
+3. React 自动重新渲染组件，`buttonText` 会根据新的 `isLiked` 值更新，按钮文字随之变化
+4. 整个过程你不需要手动修改DOM，只需要描述“状态→UI”的映射关系
+
+---
+
+如果你需要，我可以帮你写一个**带输入框验证的完整组件**，把这5个步骤再完整走一遍，让你更深入理解。需要吗？
+
+## 选择 State 结构
+- 核心思想
+构建state的核心目标是：让你的状态**简洁、可预测、易于维护**，减少冗余和矛盾，避免后续出现难以排查的bug。
+
+---
+
+- 1. 合并关联的 state
+当多个状态变量是**强关联、会一起变化**的时候，把它们合并成一个对象/数组，而不是拆成多个独立的 `useState`。这样可以避免状态不同步，让逻辑更清晰。
+
+ Demo：移动的坐标点
+```jsx
+// ✅ 推荐：合并关联的 state
+import { useState } from 'react';
+
+function MovingDot() {
+  // 把 x、y 坐标合并成一个 position 对象
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+
+  const handleMove = (direction) => {
+    setPosition(prev => {
+      switch (direction) {
+        case 'up': return { ...prev, y: prev.y - 10 };
+        case 'down': return { ...prev, y: prev.y + 10 };
+        case 'left': return { ...prev, x: prev.x - 10 };
+        case 'right': return { ...prev, x: prev.x + 10 };
+        default: return prev;
+      }
+    });
+  };
+
+  return (
+    <div>
+      <div style={{ 
+        position: 'absolute', 
+        left: position.x, 
+        top: position.y,
+        width: 20,
+        height: 20,
+        backgroundColor: 'red'
+      }} />
+      <button onClick={() => handleMove('up')}>上</button>
+      <button onClick={() => handleMove('down')}>下</button>
+      <button onClick={() => handleMove('left')}>左</button>
+      <button onClick={() => handleMove('right')}>右</button>
+    </div>
+  );
+}
+```
+
+---
+
+- 2. 避免矛盾的 state
+ 解释
+不要用多个布尔值表示互斥的状态（比如 `isLoading` 和 `isError` 不能同时为 `true`）。应该用**枚举类型的单一状态**来表示所有可能的情况，让状态变化更清晰。
+
+Demo：数据请求状态
+```jsx
+// ✅ 推荐：用单一 status 表示所有状态
+import { useState, useEffect } from 'react';
+
+function DataFetcher() {
+  // 用枚举值表示状态：idle → loading → success/error
+  const [status, setStatus] = useState('idle');
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setStatus('loading');
+      try {
+        const res = await fetch('https://api.example.com/data');
+        const data = await res.json();
+        setData(data);
+        setStatus('success');
+      } catch (err) {
+        setError(err);
+        setStatus('error');
+      }
+    };
+    fetchData();
+  }, []);
+
+  if (status === 'loading') return <div>加载中...</div>;
+  if (status === 'error') return <div>出错了：{error.message}</div>;
+  if (status === 'success') return <div>数据：{JSON.stringify(data)}</div>;
+  return <div>初始状态</div>;
+}
+```
+
+---
+
+- 3. 避免冗余的 state
+ 解释
+不要存储可以通过**现有state/props计算出来的值**。冗余的state会增加维护成本，还可能导致数据不一致。
+ Demo：购物车总价
+```jsx
+// ✅ 推荐：总价通过计算得到，不单独存为 state
+import { useState } from 'react';
+
+function Cart() {
+  const [quantity, setQuantity] = useState(1);
+  const price = 99;
+
+  // 总价通过 quantity * price 计算，不需要单独存为 state
+  const total = quantity * price;
+
+  return (
+    <div>
+      <button onClick={() => setQuantity(prev => Math.max(1, prev - 1))}>-</button>
+      <span>数量：{quantity}</span>
+      <button onClick={() => setQuantity(prev => prev + 1)}>+</button>
+      <div>总价：¥{total}</div>
+    </div>
+  );
+}
+```
+
+---
+
+- 4. 避免重复的 state
+ 解释
+不要在多个组件（或组件的多个地方）存储相同的数据。应该遵循**单一数据源原则**，把共享状态提升到最近的公共父组件，子组件通过props接收。
+
+ Demo：Todo 列表（单一数据源）
+```jsx
+// ✅ 推荐：父组件存 todos，子组件通过 props 接收
+import { useState } from 'react';
+
+// 子组件：只负责渲染单个 Todo
+function TodoItem({ todo, onToggle }) {
+  return (
+    <div>
+      <input 
+        type="checkbox" 
+        checked={todo.completed} 
+        onChange={() => onToggle(todo.id)} 
+      />
+      <span>{todo.text}</span>
+    </div>
+  );
+}
+
+// 父组件：作为单一数据源，存储所有 todos
+function TodoList() {
+  const [todos, setTodos] = useState([
+    { id: 1, text: '学习React', completed: false },
+    { id: 2, text: '写Demo', completed: false }
+  ]);
+
+  const handleToggle = (id) => {
+    setTodos(prev => prev.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  return (
+    <div>
+      {todos.map(todo => (
+        <TodoItem key={todo.id} todo={todo} onToggle={handleToggle} />
+      ))}
+    </div>
+  );
+}
+```
+
+---
+
+- 5. 避免深度嵌套的 state
+ 解释
+尽量用**扁平化的结构**存储state，避免多层嵌套对象（比如 `user.profile.address.city`）。嵌套过深会让状态更新和读取变得复杂，也容易引发不可变更新的bug。
+
+ Demo：用户信息（扁平存储）
+```jsx
+// ✅ 推荐：扁平化存储用户信息
+import { useState } from 'react';
+
+function UserProfile() {
+  // 扁平存储，而非嵌套对象 { user: { profile: { name: '', email: '' } } }
+  const [name, setName] = useState('张三');
+  const [email, setEmail] = useState('zhangsan@example.com');
+  const [city, setCity] = useState('北京');
+
+  return (
+    <div>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} />
+      <input value={city} onChange={(e) => setCity(e.target.value)} />
+    </div>
+  );
+}
+```
+
+---
+
+如果你需要，我可以帮你写一个**综合了所有原则的完整Todo应用Demo**，让你一次性看到这些原则在真实项目里的结合用法。需要吗？
+
+## 在组件间共享状态
+```ts
+import { useState } from 'react';
+
+// 子组件：摄氏度输入框
+function CelsiusInput({ value, onTemperatureChange }) {
+  const handleChange = (e) => {
+    // 调用父组件传递的更新函数
+    onTemperatureChange(Number(e.target.value));
+  };
+
+  return (
+    <div>
+      <label>摄氏度：</label>
+      <input
+        type="number"
+        value={value}
+        onChange={handleChange}
+        placeholder="输入摄氏度"
+      />
+    </div>
+  );
+}
+
+// 子组件：华氏度输入框
+function FahrenheitInput({ value, onTemperatureChange }) {
+  const handleChange = (e) => {
+    // 调用父组件传递的更新函数
+    onTemperatureChange(Number(e.target.value));
+  };
+
+  return (
+    <div>
+      <label>华氏度：</label>
+      <input
+        type="number"
+        value={value}
+        onChange={handleChange}
+        placeholder="输入华氏度"
+      />
+    </div>
+  );
+}
+
+// 父组件：管理共享状态，实现状态提升
+export default function TemperatureConverter() {
+  // 父组件保存共享状态（以摄氏度为基准值）
+  const [celsius, setCelsius] = useState('');
+
+  // 摄氏度转华氏度的计算函数
+  const toFahrenheit = (c) => {
+    return c * 9 / 5 + 32;
+  };
+
+  // 华氏度转摄氏度的计算函数
+  const toCelsius = (f) => {
+    return (f - 32) * 5 / 9;
+  };
+
+  // 处理摄氏度变化的函数
+  const handleCelsiusChange = (newCelsius) => {
+    setCelsius(newCelsius);
+  };
+
+  // 处理华氏度变化的函数
+  const handleFahrenheitChange = (newFahrenheit) => {
+    setCelsius(toCelsius(newFahrenheit));
+  };
+
+  return (
+    <div style={{ padding: '20px', maxWidth: '400px' }}>
+      <h2>温度转换器（状态提升 Demo）</h2>
+      {/* 子组件通过 props 接收父组件的状态和更新函数 */}
+      <CelsiusInput
+        value={celsius}
+        onTemperatureChange={handleCelsiusChange}
+      />
+      <FahrenheitInput
+        value={celsius ? toFahrenheit(celsius) : ''}
+        onTemperatureChange={handleFahrenheitChange}
+      />
+      <p>当前温度：{celsius} °C = {celsius ? toFahrenheit(celsius) : ''} °F</p>
+    </div>
+  );
+}
+```
+核心逻辑解释
+状态提升的本质
+原本如果两个输入框各自管理自己的状态，数据会不同步。
+现在我们把共享状态（摄氏度数值）提升到了它们的公共父组件 TemperatureConverter 中。
+父组件成为了唯一的数据源，子组件只负责渲染和触发更新。
+数据流走向
+父组件通过 props 把状态和更新函数传递给子组件。
+子组件输入变化时，调用父组件的更新函数修改父组件的状态。
+父组件状态更新后，再通过 props 把新值传递给所有子组件，实现同步。
+受控组件的体现两个输入框都是受控组件：它们的值完全由父组件的状态决定，自身不保存状态，只负责触发更新。这也是 React 表单的最佳实践。
+## 对 state 进行保留和重置
+- 相同位置的相同组件会使得 state 被保留下来
+- 相同位置的不同组件会使 state 重置
+  
+==========================================================、
+- 在相同位置重置 state 
+使用 key 来重置 state 
+```ts
+import { useState } from 'react';
+
+export default function Scoreboard() {
+  const [isPlayerA, setIsPlayerA] = useState(true);
+  return (
+    <div style={{ padding: '20px' }}>
+      {/* 核心：给两个分支的 Counter 分配唯一 key */}
+      {isPlayerA ? (
+        <Counter key="taylor" person="Taylor" />
+      ) : (
+        <Counter key="sarah" person="Sarah" />
+      )}
+      <button 
+        onClick={() => setIsPlayerA(!isPlayerA)}
+        style={{ padding: '8px 16px', cursor: 'pointer', marginTop: '10px' }}
+      >
+        下一位玩家！
+      </button>
+    </div>
+  );
+}
+
+function Counter({ person }) {
+  const [score, setScore] = useState(0);
+  const [hover, setHover] = useState(false);
+
+  let className = 'counter';
+  if (hover) className += ' hover';
+
+  return (
+    <div
+      className={className}
+      onPointerEnter={() => setHover(true)}
+      onPointerLeave={() => setHover(false)}
+      style={{ padding: '10px', border: '1px solid #eee', borderRadius: '4px' }}
+    >
+      <h1>{person} 的分数：{score}</h1>
+      <button 
+        onClick={() => setScore(score + 1)}
+        style={{ padding: '6px 12px', cursor: 'pointer' }}
+      >
+        加一
+      </button>
+    </div>
+  );
+}
+```
+## 迁移状态逻辑至 Reducer 中
+```TS
+import { useReducer } from 'react';
+
+// 1. 定义reducer：纯函数，处理所有状态更新逻辑
+function counterReducer(state, action) {
+  switch (action.type) {
+    // 加1
+    case 'increment':
+      return { count: state.count + 1 };
+    // 减1
+    case 'decrement':
+      return { count: state.count - 1 };
+    // 重置为0
+    case 'reset':
+      return { count: 0 };
+    // 兜底：未知操作返回原状态
+    default:
+      return state;
+  }
+}
+
+function Counter() {
+  // 2. 初始化状态：使用对象存储count
+  const initialState = { count: 0 };
+  // 3. 使用useReducer
+  const [state, dispatch] = useReducer(counterReducer, initialState);
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>计数器：{state.count}</h2>
+      {/* 4. 通过dispatch派发action，触发状态更新 */}
+      <button onClick={() => dispatch({ type: 'decrement' })}>-1</button>
+      <button onClick={() => dispatch({ type: 'reset' })} style={{ margin: '0 10px' }}>重置</button>
+      <button onClick={() => dispatch({ type: 'increment' })}>+1</button>
+    </div>
+  );
+}
+
+export default Counter;
+```
+这段代码是**React 中 `useReducer` Hook 的标准实践案例**，实现了一个带加减、重置功能的计数器，我会按照代码标注的步骤，结合核心概念逐行拆解讲解，同时补充关键原理和注意事项，帮你完整理解逻辑。
+
+- 整体功能概述
+你这段代码通过 `useReducer` 管理组件状态，替代了基础的 `useState`，实现了计数器的 **+1、-1、重置为0** 功能，是学习复杂状态管理的入门示例。
+
+---
+
+- 步骤1：定义 Reducer 纯函数
+```javascript
+// 1. 定义reducer：纯函数，处理所有状态更新逻辑
+function counterReducer(state, action) {
+  switch (action.type) {
+    // 加1
+    case 'increment':
+      return { count: state.count + 1 };
+    // 减1
+    case 'decrement':
+      return { count: state.count - 1 };
+    // 重置为0
+    case 'reset':
+      return { count: 0 };
+    // 兜底：未知操作返回原状态
+    default:
+      return state;
+  }
+}
+```
+- 核心定义与规则
+1. **Reducer 本质**：**纯函数**（相同输入一定返回相同输出，无副作用、不修改外部变量、不调用异步接口），是 `useReducer` 的核心。
+2. **固定参数**：
+   - `state`：组件**当前的最新状态**，只读，**禁止直接修改原状态**（遵循 React 不可变数据原则）；
+   - `action`：一个描述「要执行什么操作」的普通对象，**必须包含 `type` 字段**（字符串类型，标识操作类型）。
+3. **执行逻辑**：
+   - 通过 `switch` 匹配 `action.type`，分支处理不同业务逻辑；
+   - 每个分支**返回一个全新的状态对象**，替代原状态；
+   - `default` 兜底：匹配到未知操作类型时，直接返回原状态，避免状态异常。
+4. **不可变性原则**：代码中返回 `{ count: xxx }` 是新建对象，而非修改 `state.count`，这是 React 状态更新的核心要求。
+
+---
+
+- 步骤2：初始化组件状态
+```javascript
+// 2. 初始化状态：使用对象存储count
+const initialState = { count: 0 };
+```
+1. 定义**初始状态值**，作为组件挂载时的默认状态；
+2. 采用**对象格式**存储状态（而非单纯数字），优势是后续可轻松扩展状态（比如新增 `step: 2`、`isDisabled: false` 等字段）；
+3. 该变量定义在组件内部，仅当前组件可用。
+
+---
+
+- 步骤3：使用 `useReducer` 关联状态与逻辑
+```javascript
+// 3. 使用useReducer
+const [state, dispatch] = useReducer(counterReducer, initialState);
+```
+这是 Hook 的核心调用语法，**解构赋值**返回两个核心变量：
+- `useReducer` 参数
+- 第一个参数：`counterReducer`，步骤1定义的状态处理函数；
+- 第二个参数：`initialState`，步骤2定义的初始状态。
+
+- 返回值解析
+1. **`state`**：组件的**当前状态**，和 `useState` 的状态值用法一致，可在 JSX 中直接读取（如 `state.count`）；
+2. **`dispatch`**：一个**触发状态更新的函数**，是组件与 Reducer 通信的唯一入口。
+
+---
+
+- 步骤4：渲染UI + 通过 `dispatch` 派发 Action
+```jsx
+return (
+  <div style={{ padding: '20px' }}>
+    <h2>计数器：{state.count}</h2>
+    {/* 4. 通过dispatch派发action，触发状态更新 */}
+    <button onClick={() => dispatch({ type: 'decrement' })}>-1</button>
+    <button onClick={() => dispatch({ type: 'reset' })} style={{ margin: '0 10px' }}>重置</button>
+    <button onClick={() => dispatch({ type: 'increment' })}>+1</button>
+  </div>
+);
+```
+UI 渲染逻辑
+1. 直接读取 `state.count` 展示当前计数值；
+2. 为三个按钮绑定 `onClick` 点击事件，实现交互。
+
+ `dispatch` 工作流程
+1. 调用格式：`dispatch( action对象 )`，本例中 action 仅包含必填的 `type` 字段；
+2. 执行链路：
+   - 点击按钮 → 执行 `dispatch` → 将 action 传递给 `counterReducer`；
+   - Reducer 根据 `action.type` 计算并返回**新状态**；
+   - React 检测到状态变化 → 触发组件重新渲染 → UI 更新为最新值。
+
+---
+
+- 补充：组件导出
+```javascript
+export default Counter;
+```
+将计数器组件作为**默认导出**，其他页面/组件可以通过 `import Counter from './路径'` 引入并使用。
+
+---
+
+- 关键补充知识点
+ 1. 为什么用 `useReducer` 而不是 `useState`？
+| 场景              | `useState`                | `useReducer`               |
+| ----------------- | ------------------------- | -------------------------- |
+| 状态结构          | 简单单个值（数字/字符串） | 复杂对象/多关联状态        |
+| 更新逻辑          | 分散在组件各处            | 集中收敛到 Reducer 函数中  |
+| 可维护性/可测试性 | 适合简单组件              | 适合复杂业务、便于单元测试 |
+
+本例用 `useState` 也能实现，但 `useReducer` 更适合**状态逻辑复杂、多操作类型**的场景。
+
+- 2. 核心规范
+- Reducer 必须是纯函数，**不能修改入参 `state`**，只能返回新状态；
+- Action 对象建议标准化：`{ type: '操作类型', payload: 附加数据 }`（本例无附加数据，仅用 `type`）；
+- 必须编写 `default` 分支，避免未知操作导致状态丢失。
+
+---
+
+- 总结
+1. **Reducer**：统一处理所有状态更新规则的纯函数，根据 `action` 计算新状态；
+2. **初始状态**：定义组件挂载时的默认值，推荐用对象格式方便扩展；
+3. **useReducer**：关联 Reducer 和初始状态，返回「当前状态」和「派发函数」；
+4. **dispatch**：组件触发状态更新的唯一方式，通过传递 `action` 通知 Reducer 执行对应逻辑；
+5. 整个流程遵循 **「派发 Action → Reducer 计算新状态 → 组件重渲染」** 的单向数据流，逻辑清晰易维护。
