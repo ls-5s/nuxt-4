@@ -1,5 +1,18 @@
 import "dotenv/config";
-import WebSocket from "ws";
+import WebSocket, { WebSocketServer } from "ws";
+import http from "http";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// 全局配置状态
+const botConfig = {
+  enabled: true, // 机器人开关
+  systemPrompt: "你是一个智能助手，回复请简短幽默。不要长篇大论。",
+};
 
 // 简单的内存存储上下文
 // key: user_id (私聊) 或 group_id (群聊)
@@ -7,14 +20,11 @@ import WebSocket from "ws";
 const chatHistory = new Map();
 const MAX_HISTORY_LENGTH = 10; // 限制每个会话只保留最近 10 条消息
 
-// 默认的 System Prompt
-const DEFAULT_SYSTEM_PROMPT = {
-  role: "system",
-  content: "你是一个智能助手，回复请简短幽默。不要长篇大论。",
-};
-
 // 通义千问 AI 调用函数
 async function callQwenNative(userInput, sessionId) {
+  // 如果机器人被关闭，直接返回 null
+  if (!botConfig.enabled) return null;
+
   // 🔴 优先从环境变量读取 API Key
   const API_KEY = process.env.DASHSCOPE_API_KEY;
   if (!API_KEY || API_KEY.startsWith("sk-xxxx")) {
@@ -24,8 +34,17 @@ async function callQwenNative(userInput, sessionId) {
   const BASE_URL =
     "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 
-  // 获取上下文
-  let messages = chatHistory.get(sessionId) || [DEFAULT_SYSTEM_PROMPT];
+  // 获取上下文，动态使用当前的 systemPrompt
+  let messages = chatHistory.get(sessionId) || [
+    { role: "system", content: botConfig.systemPrompt },
+  ];
+
+  // 确保第一条始终是当前的 System Prompt (如果配置被修改了)
+  if (messages.length > 0 && messages[0].role === "system") {
+    messages[0].content = botConfig.systemPrompt;
+  } else {
+    messages.unshift({ role: "system", content: botConfig.systemPrompt });
+  }
 
   // 将用户新消息加入历史
   messages.push({ role: "user", content: userInput });
@@ -35,6 +54,12 @@ async function callQwenNative(userInput, sessionId) {
     // 保留第一条 system prompt，切掉中间的老消息
     messages = [messages[0], ...messages.slice(-(MAX_HISTORY_LENGTH - 1))];
   }
+
+  // [DEBUG] 打印即将发送给 AI 的上下文
+  console.log(
+    `[DEBUG] 发送给 AI 的上下文 (sessionId: ${sessionId}):`,
+    JSON.stringify(messages, null, 2),
+  );
 
   try {
     const response = await fetch(BASE_URL, {
@@ -71,62 +96,182 @@ async function callQwenNative(userInput, sessionId) {
   }
 }
 
-const ws = new WebSocket("ws://127.0.0.1:3001");
-
-ws.on("open", function open() {
-  console.log("✅ [EXTERNAL] 已连接到 NapCat OneBot 端口 (3001)");
-});
-
-ws.on("message", async function incoming(data) {
-  try {
-    const msg = JSON.parse(data);
-    if (msg.meta_event_type === "heartbeat") return; // 忽略心跳
-
-    if (msg.post_type === "message") {
-      const content = msg.raw_message || "";
-
-      // 简单过滤：忽略空消息或过短消息
-      if (!content || content.length < 1) return;
-
-      console.log(`[EXTERNAL] 收到消息: ${content}`);
-      // DEBUG: 打印消息元数据，检查 message_type 和 ID
-      console.log(
-        `[DEBUG] type: ${msg.message_type}, user: ${msg.user_id}, group: ${msg.group_id}`,
-      );
-
-      // 确定会话 ID：优先判断是否有 group_id
-      // 注意：私聊消息通常也有 user_id，群聊消息也有 user_id (发送者)
-      let sessionId;
-      if (msg.message_type === "group" || msg.group_id) {
-        sessionId = `group_${msg.group_id}`;
-      } else {
-        sessionId = `user_${msg.user_id}`;
-      }
-
-      console.log(`[DEBUG] Current SessionID: ${sessionId}`);
-
-      // 调用 AI 回复 (带上下文)
-      const aiReply = await callQwenNative(content, sessionId);
-
-      if (aiReply) {
-        console.log(`[EXTERNAL] AI 回复: ${aiReply}`);
-        ws.send(
-          JSON.stringify({
-            action: "send_msg",
-            params: {
-              user_id: msg.user_id,
-              group_id: msg.group_id,
-              message: aiReply,
-            },
-          }),
-        );
-      }
-    }
-  } catch (e) {
-    console.error("处理消息错误:", e);
+// --- Web Dashboard Server ---
+const HTTP_PORT = 3002;
+const server = http.createServer((req, res) => {
+  // 处理 API 请求
+  if (req.url === "/api/config" && req.method === "GET") {
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+    res.end(JSON.stringify(botConfig));
+    return;
   }
+
+  if (req.url === "/api/config" && req.method === "POST") {
+    let body = "";
+    req.on("data", (chunk) => {
+      body += chunk.toString();
+    });
+    req.on("end", () => {
+      try {
+        const newConfig = JSON.parse(body);
+        if (typeof newConfig.enabled === "boolean")
+          botConfig.enabled = newConfig.enabled;
+        if (newConfig.systemPrompt)
+          botConfig.systemPrompt = newConfig.systemPrompt;
+
+        console.log("配置已更新:", botConfig);
+
+        res.writeHead(200, {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        });
+        res.end(JSON.stringify({ success: true, config: botConfig }));
+      } catch (e) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON" }));
+      }
+    });
+    return;
+  }
+
+  // 服务静态页面 (dashboard.html)
+  if (req.url === "/" || req.url === "/index.html") {
+    fs.readFile(path.join(__dirname, "dashboard.html"), (err, content) => {
+      if (err) {
+        res.writeHead(500);
+        res.end("Error loading dashboard.html");
+      } else {
+        res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
+        res.end(content);
+      }
+    });
+    return;
+  }
+
+  res.writeHead(404);
+  res.end("Not Found");
 });
 
-ws.on("error", (e) =>
-  console.log("❌ 连接失败，请检查 NapCat 是否运行: " + e.message),
-);
+// --- Dashboard WebSocket Server ---
+const wss = new WebSocketServer({ server });
+
+function broadcastToDashboard(data) {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(data));
+    }
+  });
+}
+
+server.listen(HTTP_PORT, () => {
+  console.log(`🌐 Web Dashboard 运行在: http://localhost:${HTTP_PORT}`);
+});
+
+// --- WebSocket Bot Client ---
+let ws;
+
+function connectToNapCat() {
+  if (ws) {
+    ws.removeAllListeners();
+    try {
+      ws.close();
+    } catch (e) {}
+  }
+
+  ws = new WebSocket("ws://127.0.0.1:3001");
+
+  ws.on("open", function open() {
+    console.log("✅ [EXTERNAL] 已连接到 NapCat OneBot 端口 (3001)");
+    broadcastToDashboard({
+      type: "log",
+      role: "system_info",
+      text: "Connected to NapCat (QQ Client)",
+      time: new Date().toLocaleTimeString(),
+    });
+  });
+
+  ws.on("message", async function incoming(data) {
+    try {
+      const msg = JSON.parse(data);
+      if (msg.meta_event_type === "heartbeat") return; // 忽略心跳
+
+      if (msg.post_type === "message") {
+        const content = msg.raw_message || "";
+
+        // 简单过滤：忽略空消息或过短消息
+        if (!content || content.length < 1) return;
+
+        console.log(`[EXTERNAL] 收到消息: ${content}`);
+        broadcastToDashboard({
+          type: "log",
+          role: "user",
+          text: content,
+          user_id: msg.user_id,
+          group_id: msg.group_id,
+          time: new Date().toLocaleTimeString(),
+        });
+        // DEBUG: 打印消息元数据，检查 message_type 和 ID
+        console.log(
+          `[DEBUG] type: ${msg.message_type}, user: ${msg.user_id}, group: ${msg.group_id}`,
+        );
+
+        // 确定会话 ID：优先判断是否有 group_id
+        // 注意：私聊消息通常也有 user_id，群聊消息也有 user_id (发送者)
+        let sessionId;
+        if (msg.message_type === "group" || msg.group_id) {
+          sessionId = `group_${msg.group_id}`;
+        } else {
+          sessionId = `user_${msg.user_id}`;
+        }
+
+        console.log(`[DEBUG] Current SessionID: ${sessionId}`);
+
+        // 调用 AI 回复 (带上下文)
+        const aiReply = await callQwenNative(content, sessionId);
+
+        if (aiReply) {
+          console.log(`[EXTERNAL] AI 回复: ${aiReply}`);
+          broadcastToDashboard({
+            type: "log",
+            role: "assistant",
+            text: aiReply,
+            time: new Date().toLocaleTimeString(),
+          });
+          ws.send(
+            JSON.stringify({
+              action: "send_msg",
+              params: {
+                user_id: msg.user_id,
+                group_id: msg.group_id,
+                message: aiReply,
+              },
+            }),
+          );
+        }
+      }
+    } catch (e) {
+      console.error("处理消息错误:", e);
+    }
+  });
+
+  ws.on("error", (e) => {
+    console.log("❌ 连接 NapCat 失败, 3秒后重试: " + e.message);
+  });
+
+  ws.on("close", () => {
+    console.log("⚠️ 与 NapCat 断开连接, 3秒后重试...");
+    broadcastToDashboard({
+      type: "log",
+      role: "system_error",
+      text: "Disconnected from NapCat. Retrying in 3s...",
+      time: new Date().toLocaleTimeString(),
+    });
+    setTimeout(connectToNapCat, 3000);
+  });
+}
+
+// 启动连接
+connectToNapCat();

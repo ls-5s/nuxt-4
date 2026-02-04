@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NapCat Bot 控制台</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-body: #f1f5f9;
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+            
+            --chat-user-bg: #4f46e5;
+            --chat-user-text: #ffffff;
+            --chat-ai-bg: #f8fafc;
+            --chat-ai-text: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* Prevent body scroll */
+        }
+
+        /* Header */
+        header {
+            height: 60px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 24px;
+            flex-shrink: 0;
+            box-shadow: var(--shadow-sm);
+            z-index: 10;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+
+        .connection-status {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--text-sub);
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+        .status-dot.active { background: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2); }
+        .status-dot.error { background: #ef4444; }
+
+        /* Main Layout */
+        .layout {
+            display: flex;
+            flex: 1;
+            padding: 24px;
+            gap: 24px;
+            height: calc(100vh - 60px);
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Left Panel */
+        .panel-left {
+            width: 380px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .card-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 0;
+        }
+
+        .label-text { font-weight: 500; }
+
+        /* Modern Toggle Switch */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-switch .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #cbd5e1;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        .toggle-switch .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+        .toggle-switch input:checked + .slider { background-color: var(--primary); }
+        .toggle-switch input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Input Area */
+        .input-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        
+        textarea {
+            width: 100%;
+            flex: 1;
+            min-height: 200px;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            resize: none;
+            outline: none;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+        textarea:focus {
+            background: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-save {
+            margin-top: 16px;
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-save:hover { background: var(--primary-hover); }
+        .btn-save:active { transform: translateY(1px); }
+
+        .save-status {
+            text-align: center;
+            font-size: 13px;
+            margin-top: 12px;
+            height: 20px;
+            color: var(--text-sub);
+        }
+
+        /* Right Panel (Chat) */
+        .panel-right {
+            flex: 1; /* Changed from flex: 2 to flex: 1 to fill remaining space */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            min-width: 0; /* Important for flex child scrolling */
+        }
+
+        .chat-card {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .chat-title { font-weight: 600; font-size: 15px; }
+
+        .chat-window {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+            background: #1e1e1e; /* Dark terminal bg */
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-family: 'JetBrains Mono', 'Consolas', 'Monaco', 'Courier New', monospace;
+            color: #d4d4d4;
+        }
+
+        .log-entry {
+            font-size: 13px;
+            line-height: 1.5;
+            word-wrap: break-word;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .log-time { color: #cccccc; min-width: 110px; }
+        .log-tag { color: #22c55e; font-weight: bold; } /* Green [info] */
+        .log-botname { color: #d4d4d4; }
+        .log-separator { color: #666; }
+        
+        /* 接收 <- (User) */
+        .log-recv { color: #dcdcaa; } /* Light Yellow */
+        /* 发送 -> (AI) */
+        .log-send { color: #ce9178; } /* Light Red/Orange */
+        
+        .log-content { color: #9cdcfe; flex: 1; } /* Light Blue */
+
+        /* Hide old bubble styles if they exist or just override them above */
+        .message-row, .msg-bubble, .msg-meta { display: none; }
+
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            gap: 12px;
+        }
+        .empty-icon { font-size: 48px; opacity: 0.2; }
+        
+        /* Scrollbar styling for dark mode */
+        .chat-window::-webkit-scrollbar { width: 10px; }
+        .chat-window::-webkit-scrollbar-track { background: #1e1e1e; }
+        .chat-window::-webkit-scrollbar-thumb { background: #444; border-radius: 5px; }
+        .chat-window::-webkit-scrollbar-thumb:hover { background: #555; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand">
+            🤖 <span>NapCat Bot</span>
+        </div>
+        <div class="connection-status">
+            <div id="wsDot" class="status-dot"></div>
+            <span id="wsText">连接中...</span>
+        </div>
+    </header>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="panel-left">
+            <div class="card">
+                <div class="card-header">
+                    功能开关
+                </div>
+                <div class="control-row">
+                    <span class="label-text">启用自动回复</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="botSwitch">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="card" style="flex: 1;">
+                <div class="card-header">
+                    🧠 人设配置
+                </div>
+                <div class="input-group" style="flex: 1; display: flex; flex-direction: column;">
+                    <label>System Prompt</label>
+                    <textarea id="promptInput" placeholder="输入 AI 的人设指令..."></textarea>
+                </div>
+                <button class="btn-save" onclick="saveConfig()">保存配置</button>
+                <div id="statusMsg" class="save-status"></div>
+            </div>
+        </aside>
+
+        <!-- Main Chat -->
+        <main class="panel-right">
+            <div class="card chat-card">
+                <div class="chat-header">
+                    <span style="font-size: 18px;">📜</span>
+                    <span class="chat-title">实时对话监控</span>
+                </div>
+                <div id="chatLog" class="chat-window">
+                    <div class="empty-state">
+                        <div class="empty-icon">💬</div>
+                        <div>等待消息中...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const API_URL = '/api/config';
+
+        // Load Config
+        async function loadConfig() {
+            try {
+                const res = await fetch(API_URL);
+                const config = await res.json();
+                document.getElementById('botSwitch').checked = config.enabled;
+                document.getElementById('promptInput').value = config.systemPrompt;
+            } catch (e) {
+                console.error('Failed to load config', e);
+                showStatus('❌ 加载配置失败', 'error');
+            }
+        }
+
+        // Save Config
+        async function saveConfig() {
+            const enabled = document.getElementById('botSwitch').checked;
+            const prompt = document.getElementById('promptInput').value;
+            
+            showStatus('正在保存...', 'normal');
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        enabled: enabled,
+                        systemPrompt: prompt
+                    })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showStatus('✅ 配置已保存', 'success');
+                } else {
+                    showStatus('❌ 保存失败', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                showStatus('❌ 网络错误', 'error');
+            }
+        }
+
+        function showStatus(msg, type) {
+            const el = document.getElementById('statusMsg');
+            el.innerText = msg;
+            if (type === 'success') el.style.color = '#22c55e';
+            else if (type === 'error') el.style.color = '#ef4444';
+            else el.style.color = '#64748b';
+            
+            if (type === 'success') setTimeout(() => el.innerText = '', 2000);
+        }
+
+        // Auto save on switch toggle
+        document.getElementById('botSwitch').addEventListener('change', saveConfig);
+
+        // Init
+        loadConfig();
+
+        // WebSocket
+        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const wsUrl = `${protocol}//${window.location.host}`;
+        let ws;
+
+        function updateWsStatus(status) {
+            const dot = document.getElementById('wsDot');
+            const text = document.getElementById('wsText');
+            if (status === 'connected') {
+                dot.className = 'status-dot active';
+                text.innerText = '实时监控中';
+            } else {
+                dot.className = 'status-dot error';
+                text.innerText = '连接断开';
+            }
+        }
+
+        function connectWs() {
+            ws = new WebSocket(wsUrl);
+
+            ws.onopen = () => updateWsStatus('connected');
+            
+            ws.onclose = () => {
+                updateWsStatus('disconnected');
+                setTimeout(connectWs, 3000);
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'log') {
+                        appendLog(data);
+                    }
+                } catch(e) {}
+            };
+        }
+
+        function appendLog(data) {
+            const container = document.getElementById('chatLog');
+            
+            // Remove empty state if exists
+            const emptyState = container.querySelector('.empty-state');
+            if (emptyState) emptyState.remove();
+            
+            // Handle System Messages (Error/Info)
+            if (data.role === 'system_error' || data.role === 'system_info') {
+                 const row = document.createElement('div');
+                 row.className = 'log-entry';
+                 row.style.color = data.role === 'system_error' ? '#ef4444' : '#64748b';
+                 row.innerText = `[SYSTEM] ${data.text}`;
+                 container.appendChild(row);
+                 container.scrollTop = container.scrollHeight;
+                 return;
+            }
+
+            // Create Log Line
+            // Format: MM-DD HH:mm:ss [info] NapCat | 接收 <- 私聊 (User) Content
+            
+            const now = new Date();
+            const timeStr = `${(now.getMonth()+1).toString().padStart(2,'0')}-${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}`;
+            
+            const row = document.createElement('div');
+            row.className = 'log-entry';
+            
+            // 1. Time
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'log-time';
+            timeSpan.innerText = timeStr;
+            
+            // 2. Tag
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'log-tag';
+            tagSpan.innerText = '[info]';
+            
+            // 3. Name
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'log-botname';
+            nameSpan.innerText = ' NapCat '; // Spaces for padding
+            
+            // 4. Separator
+            const sepSpan = document.createElement('span');
+            sepSpan.className = 'log-separator';
+            sepSpan.innerText = '|';
+            
+            // 5. Direction + Type + ID
+            const metaSpan = document.createElement('span');
+            const isRecv = data.role === 'user';
+            metaSpan.className = isRecv ? 'log-recv' : 'log-send';
+            
+            const direction = isRecv ? '接收 <-' : '发送 ->';
+            const type = data.group_id ? '群聊' : '私聊';
+            const id = data.group_id || data.user_id || 'System';
+            
+            metaSpan.innerText = ` ${direction} ${type} (${id})`;
+            
+            // 6. Content
+            const contentSpan = document.createElement('span');
+            contentSpan.className = 'log-content';
+            contentSpan.innerText = ` ${data.text}`;
+            
+            row.appendChild(timeSpan);
+            row.appendChild(tagSpan);
+            row.appendChild(nameSpan);
+            row.appendChild(sepSpan);
+            row.appendChild(metaSpan);
+            row.appendChild(contentSpan);
+            
+            container.appendChild(row);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        connectWs();
+    </script>
+</body>
+</html>
