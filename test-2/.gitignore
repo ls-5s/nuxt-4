@@ -26,6 +26,6 @@ NapCatQQ/**/*.exe
 # System
 .DS_Store
 Thumbs.db
-
+.env
 # User Configs (Optional - keep sample configs but ignore personal ones if needed)
 # For now, we keep configs but ignore the logs and DBs.
