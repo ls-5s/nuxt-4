@@ -1,0 +1,32 @@
+{
+  "network": {
+    "httpServers": [
+      {
+        "port": 3000,
+        "host": "0.0.0.0",
+        "enableCors": true,
+        "enableWebsocket": true,
+        "messagePostFormat": "string",
+        "token": "",
+        "debug": false
+      }
+    ],
+    "httpSseServers": [],
+    "httpClients": [],
+    "websocketServers": [
+      {
+        "port": 3001,
+        "host": "0.0.0.0",
+        "enable": true,
+        "token": "",
+        "debug": false
+      }
+    ],
+    "websocketClients": [],
+    "plugins": []
+  },
+  "musicSignUrl": "",
+  "enableLocalFile2Url": false,
+  "parseMultMsg": false,
+  "imageDownloadProxy": ""
+}

@@ -1,0 +1,22 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# NapCatQQ Runtime & Logs
+NapCatQQ/napcat/logs/
+NapCatQQ/napcat/cache/
+NapCatQQ/*.log
+NapCatQQ/napcat/*.log
+
+# Database Files
+*.db
+*.db-shm
+*.db-wal
+
+# System
+.DS_Store
+Thumbs.db
+
+# User Configs (Optional - keep sample configs but ignore personal ones if needed)
+# For now, we keep configs but ignore the logs and DBs.

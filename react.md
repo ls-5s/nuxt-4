@@ -1203,3 +1203,88 @@ export default Counter;
 3. **useReducer**：关联 Reducer 和初始状态，返回「当前状态」和「派发函数」；
 4. **dispatch**：组件触发状态更新的唯一方式，通过传递 `action` 通知 Reducer 执行对应逻辑；
 5. 整个流程遵循 **「派发 Action → Reducer 计算新状态 → 组件重渲染」** 的单向数据流，逻辑清晰易维护。
+##  使用 Context 深层传递参数
+// 导入核心 API
+```ts
+import { createContext, useContext } from 'react';
+
+// 1. 创建上下文容器（设置默认兜底值）
+const DemoContext = createContext('默认数据');
+
+// 最深层子组件：消费 Context 数据
+const DeepChild = () => {
+  // 2. 使用 useContext 钩子获取共享数据
+  const contextData = useContext(DemoContext);
+  return <p>深层子组件获取到的数据：{contextData}</p>;
+};
+
+// 中间层组件：无需传递任何 props，完全解耦
+const MiddleChild = () => {
+  return <DeepChild />;
+};
+
+// 根组件：提供 Context 数据
+function App() {
+  return (
+    <div style={{ padding: 20 }}>
+      <h3>父组件</h3>
+      {/* 3. 使用 Provider 包裹组件树，通过 value 传递数据 */}
+      <DemoContext.Provider value="Hello Context!">
+        {/* 中间组件无需透传 props */}
+        <MiddleChild />
+      </DemoContext.Provider>
+    </div>
+  );
+}
+
+export default App;
+```
+创建：createContext 生成上下文容器
+提供：根组件用 XXXContext.Provider 包裹子组件，value 属性定义共享数据
+消费：后代组件用 useContext 直接获取数据，跳过所有中间层
+
+进阶极简 Demo：可修改的 Context
+在基础版上扩展，支持子组件修改共享数据，同样单文件实现：
+
+```ts
+import { createContext, useContext, useState } from 'react';
+
+// 1. 创建上下文
+const CountContext = createContext(0);
+
+// 深层子组件：读取数据 + 调用修改方法
+const Counter = () => {
+  // 解构出数据和修改函数
+  const { count, increment } = useContext(CountContext);
+  return (
+    <div>
+      <p>当前计数：{count}</p>
+      <button onClick={increment}>点击+1</button>
+    </div>
+  );
+};
+
+// 中间组件：无任何 props 透传
+const Middle = () => {
+  return <Counter />;
+};
+
+// 根组件：管理状态 + 提供数据和修改方法
+function App() {
+  const [count, setCount] = useState(0);
+  // 定义修改状态的方法
+  const increment = () => setCount(prev => prev + 1);
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h3>可修改的 Context 示例</h3>
+      {/* 将状态和修改方法一起传入上下文 */}
+      <CountContext.Provider value={{ count, increment }}>
+        <Middle />
+      </CountContext.Provider>
+    </div>
+  );
+}
+
+export default App;
+```
