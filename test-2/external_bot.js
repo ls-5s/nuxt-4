@@ -1,16 +1,21 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import WebSocket, { WebSocketServer } from "ws";
 import http from "http";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { textToQQSilk } from "./tts_service.js"; // Import TTS Service
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// Load .env from the same directory as this script
+dotenv.config({ path: path.join(__dirname, ".env") });
+
 // 全局配置状态
 const botConfig = {
   enabled: true, // 机器人开关
+  enableTTS: true, // 开启语音回复
   systemPrompt: "你是一个智能助手，回复请简短幽默。不要长篇大论。",
 };
 
@@ -119,6 +124,8 @@ const server = http.createServer((req, res) => {
         const newConfig = JSON.parse(body);
         if (typeof newConfig.enabled === "boolean")
           botConfig.enabled = newConfig.enabled;
+        if (typeof newConfig.enableTTS === "boolean")
+          botConfig.enableTTS = newConfig.enableTTS;
         if (newConfig.systemPrompt)
           botConfig.systemPrompt = newConfig.systemPrompt;
 
@@ -205,6 +212,37 @@ function connectToNapCat() {
         if (!content || content.length < 1) return;
 
         console.log(`[EXTERNAL] 收到消息: ${content}`);
+
+        // 指令处理
+        if (content.trim() === "开启语音") {
+          botConfig.enableTTS = true;
+          ws.send(
+            JSON.stringify({
+              action: "send_msg",
+              params: {
+                user_id: msg.user_id,
+                group_id: msg.group_id,
+                message: "语音回复已开启 🔊",
+              },
+            }),
+          );
+          return;
+        }
+        if (content.trim() === "关闭语音") {
+          botConfig.enableTTS = false;
+          ws.send(
+            JSON.stringify({
+              action: "send_msg",
+              params: {
+                user_id: msg.user_id,
+                group_id: msg.group_id,
+                message: "语音回复已关闭 🔇",
+              },
+            }),
+          );
+          return;
+        }
+
         broadcastToDashboard({
           type: "log",
           role: "user",
@@ -240,13 +278,32 @@ function connectToNapCat() {
             text: aiReply,
             time: new Date().toLocaleTimeString(),
           });
+
+          let messagePayload = aiReply;
+
+          // 尝试转换为语音
+          if (botConfig.enableTTS) {
+            try {
+              const silkPath = await textToQQSilk(aiReply);
+              if (silkPath) {
+                // 使用 file:// 协议发送本地 silk 文件
+                messagePayload = [
+                  { type: "record", data: { file: `file://${silkPath}` } },
+                ];
+                console.log(`[EXTERNAL] 发送语音: ${silkPath}`);
+              }
+            } catch (ttsErr) {
+              console.error("[EXTERNAL] TTS 转换失败，回退到文本:", ttsErr);
+            }
+          }
+
           ws.send(
             JSON.stringify({
               action: "send_msg",
               params: {
                 user_id: msg.user_id,
                 group_id: msg.group_id,
-                message: aiReply,
+                message: messagePayload,
               },
             }),
           );

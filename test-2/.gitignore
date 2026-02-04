@@ -29,3 +29,9 @@ Thumbs.db
 .env
 # User Configs (Optional - keep sample configs but ignore personal ones if needed)
 # For now, we keep configs but ignore the logs and DBs.
+
+# Audio Cache
+temp_audio/
+*.silk
+*.wav
+*.pcm
