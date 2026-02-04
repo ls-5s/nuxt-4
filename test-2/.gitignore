@@ -9,6 +9,15 @@ NapCatQQ/napcat/cache/
 NapCatQQ/*.log
 NapCatQQ/napcat/*.log
 
+# Sensitive Binaries (GitHub Security Alert)
+NapCatQQ/wrapper.node
+NapCatQQ/**/*.node
+NapCatQQ/**/*.dll
+NapCatQQ/**/*.exe
+*.node
+*.dll
+*.exe
+
 # Database Files
 *.db
 *.db-shm

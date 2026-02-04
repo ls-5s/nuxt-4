@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NapCat Log Dashboard</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #sidebar {
+            width: 250px;
+            background-color: #252526;
+            border-right: 1px solid #333;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 10px;
+            font-weight: bold;
+            border-bottom: 1px solid #333;
+            background-color: #2d2d2d;
+        }
+        .file-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: #9cdcfe;
+        }
+        .file-item:hover {
+            background-color: #2a2d2e;
+        }
+        .file-item.active {
+            background-color: #37373d;
+            color: #fff;
+        }
+        #main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #toolbar {
+            height: 40px;
+            background-color: #2d2d2d;
+            border-bottom: 1px solid #333;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            font-size: 14px;
+        }
+        #status {
+            margin-left: auto;
+            font-size: 12px;
+            color: #888;
+        }
+        #log-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #1e1e1e;
+        }
+        #log-content {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        /* Simple ANSI Color Classes */
+        .ansi-black { color: #000000; }
+        .ansi-red { color: #cd3131; }
+        .ansi-green { color: #0dbc79; }
+        .ansi-yellow { color: #e5e510; }
+        .ansi-blue { color: #2472c8; }
+        .ansi-magenta { color: #bc3fbc; }
+        .ansi-cyan { color: #11a8cd; }
+        .ansi-white { color: #e5e5e5; }
+        .ansi-bright-black { color: #666666; }
+        .ansi-bright-red { color: #f14c4c; }
+        .ansi-bright-green { color: #23d18b; }
+        .ansi-bright-yellow { color: #f5f543; }
+        .ansi-bright-blue { color: #3b8eea; }
+        .ansi-bright-magenta { color: #d670d6; }
+        .ansi-bright-cyan { color: #29b8db; }
+        .ansi-bright-white { color: #e5e5e5; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <div class="sidebar-header">日志文件列表</div>
+        <div id="file-list"></div>
+    </div>
+    <div id="main">
+        <div id="toolbar">
+            <span id="current-file">未选择文件</span>
+            <div id="status">Ready</div>
+        </div>
+        <div id="log-container">
+            <pre id="log-content"></pre>
+        </div>
+    </div>
+
+    <script>
+        const fileListEl = document.getElementById('file-list');
+        const logContentEl = document.getElementById('log-content');
+        const currentFileEl = document.getElementById('current-file');
+        const statusEl = document.getElementById('status');
+        const logContainer = document.getElementById('log-container');
+        
+        let ws;
+        let activeFile = null;
+
+        // ANSI to HTML parser (Very basic)
+        function parseAnsi(text) {
+            if (!text) return '';
+            // Remove clear screen codes
+            text = text.replace(/\x1b\[2J/g, '');
+            
+            // Simple color replacement
+            // This is not a full ANSI parser but covers basic colors
+            const colors = [
+                { code: 30, class: 'ansi-black' },
+                { code: 31, class: 'ansi-red' },
+                { code: 32, class: 'ansi-green' },
+                { code: 33, class: 'ansi-yellow' },
+                { code: 34, class: 'ansi-blue' },
+                { code: 35, class: 'ansi-magenta' },
+                { code: 36, class: 'ansi-cyan' },
+                { code: 37, class: 'ansi-white' },
+                { code: 90, class: 'ansi-bright-black' },
+                { code: 91, class: 'ansi-bright-red' },
+                { code: 92, class: 'ansi-bright-green' },
+                { code: 93, class: 'ansi-bright-yellow' },
+                { code: 94, class: 'ansi-bright-blue' },
+                { code: 95, class: 'ansi-bright-magenta' },
+                { code: 96, class: 'ansi-bright-cyan' },
+                { code: 97, class: 'ansi-bright-white' }
+            ];
+
+            // Escape HTML
+            text = text.replace(/&/g, "&amp;")
+                       .replace(/</g, "&lt;")
+                       .replace(/>/g, "&gt;")
+                       .replace(/"/g, "&quot;")
+                       .replace(/'/g, "&#039;");
+
+            // Replace colors
+            // Format: \x1b[31mTEXT\x1b[0m or \x1b[31;1m
+            // Simplified approach: Split by \x1b[
+            
+            // For better results, let's just strip ANSI if it's too complex for regex, 
+            // or try a simple replace for common patterns.
+            
+            // Strip reset
+            text = text.replace(/\x1b\[0?m/g, '</span>');
+            
+            colors.forEach(c => {
+                const regex = new RegExp(`\\x1b\\[${c.code}(?:;1)?m`, 'g');
+                text = text.replace(regex, `<span class="${c.class}">`);
+            });
+            
+            // Remove other remaining codes
+            text = text.replace(/\x1b\[[0-9;]*m/g, '');
+            
+            return text;
+        }
+
+        async function loadFileList() {
+            try {
+                const res = await fetch('/api/files');
+                const files = await res.json();
+                
+                fileListEl.innerHTML = '';
+                files.forEach((file, index) => {
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    div.textContent = file.name; // + ` (${(file.size/1024).toFixed(1)}KB)`;
+                    div.onclick = () => selectFile(file.name, div);
+                    fileListEl.appendChild(div);
+
+                    // Auto select the first (newest) file
+                    if (index === 0 && !activeFile) {
+                        selectFile(file.name, div);
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        function initWebSocket() {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            ws = new WebSocket(`${protocol}//${window.location.host}`);
+            
+            ws.onopen = () => {
+                statusEl.textContent = 'Connected';
+                statusEl.style.color = '#0dbc79';
+                if (activeFile) {
+                    ws.send(JSON.stringify({ type: 'watch', filename: activeFile }));
+                }
+            };
+            
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'content' || data.type === 'update') {
+                    // If update, we might want to append?
+                    // Currently server sends full content for simplicity on 'update' too?
+                    // Let's check server logic. Yes, server sends full content on change.
+                    // So we replace.
+                    logContentEl.innerHTML = parseAnsi(data.content);
+                    
+                    // Auto scroll to bottom
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                }
+            };
+            
+            ws.onclose = () => {
+                statusEl.textContent = 'Disconnected';
+                statusEl.style.color = '#cd3131';
+                setTimeout(initWebSocket, 3000);
+            };
+        }
+
+        function selectFile(filename, element) {
+            if (activeFile === filename) return;
+            
+            activeFile = filename;
+            currentFileEl.textContent = filename;
+            
+            // Update UI highlight
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+            
+            // Send watch command
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify({ type: 'watch', filename }));
+            }
+        }
+
+        // Init
+        loadFileList();
+        initWebSocket();
+        
+        // Refresh file list occasionally
+        setInterval(loadFileList, 10000);
+    </script>
+</body>
+</html>
